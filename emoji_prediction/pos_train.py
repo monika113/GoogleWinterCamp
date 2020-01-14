@@ -151,7 +151,7 @@ LABEL = data.Field(tokenize=tokenizer, lower=True)
 
 train_data, valid_data = data.TabularDataset.splits(
     path='data', train='train.csv',
-    validation='test.csv',
+    validation='dev.csv',
     format='csv', 
     csv_reader_params={'delimiter':'\t'},
     fields=[('text',TEXT),('label',LABEL)]

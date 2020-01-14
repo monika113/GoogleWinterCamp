@@ -15,8 +15,8 @@ from model import transformer, CustomSchedule, loss_function, accuracy
 def train(inputs, outputs, args):
     tf.keras.backend.clear_session()
     dataset, VOCAB_SIZE, _ = get_dataset(inputs, outputs, args)
-    if args['pre_train']:
-        cur_model = tf.keras.models.load_model(args['pre_train_model_path'])
+    if args.pre_train:
+        cur_model = tf.keras.models.load_model(args.pre_train_model_path)
     else:
         cur_model = transformer(
             vocab_size=VOCAB_SIZE,
@@ -34,7 +34,7 @@ def train(inputs, outputs, args):
         print('build model success, start training...')
         cur_model.fit(dataset, epochs=config.EPOCHS)
 
-        cur_model.save(args['save_model_path'])
+        cur_model.save(args.save_model_path)
         print()
 
 

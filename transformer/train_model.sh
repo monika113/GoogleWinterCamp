@@ -1,1 +1,1 @@
-python train.py --pre_train False --load_tokenizer True --load_tokenizer_path 'tokenizer/token01'
+python train.py --pre_train 0 --load_tokenizer 0 --load_tokenizer_path 'tokenizer/token01'

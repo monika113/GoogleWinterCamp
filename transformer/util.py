@@ -2,18 +2,18 @@ import config
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import pickle
-
+from argparse import ArgumentParser
 
 def build_tokenizer(inputs, outputs, args):
     # Build tokenizer using tfds for both questions and answers
-    if args['load_tokenizer']:
-        tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(args['load_tokenizer_path'])
+    if args.load_tokenizer:
+        tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(args.load_tokenizer_path)
         print('load tokenizer success!')
     else:
         tokenizer = tfds.features.text.SubwordTextEncoder.build_from_corpus(
             inputs + outputs, target_vocab_size=2**13)
 
-        tokenizer.save_to_file(args['save_tokenizer_path'])
+        tokenizer.save_to_file(args.save_tokenizer_path)
     
     # Define start and end token to indicate the start and end of a sentence
     START_TOKEN, END_TOKEN = [tokenizer.vocab_size], [tokenizer.vocab_size + 1]
@@ -69,9 +69,9 @@ def get_dataset(inputs, outputs, args):
 
 def get_args():
     parser = ArgumentParser()
-    parser.add_argument("--pre_train", type=double, default=False,
+    parser.add_argument("--pre_train", type=int, default=False,
                         help="load pre train model or not")
-    parser.add_argument("--load_tokenizer", type=double, default=False,
+    parser.add_argument("--load_tokenizer", type=int, default=False,
                         help="load tokenizer or not")
     parser.add_argument("--pre_train_model_path", type=str, default=config.MODEL_PATH, help="Path of pre_train model")
     parser.add_argument("--save_model_path", type=str, default=config.MODEL_PATH, help="Path to save model")
@@ -87,5 +87,6 @@ if __name__ == "__main__":
     questions = pickle.load(questions_infile)
     answers = pickle.load(answers_infile)
     print('load data success!')
-    build_tokenizer(questions, answers)
+    args = get_args()
+    build_tokenizer(questions, answers, args)
 

@@ -5,17 +5,17 @@ def preprocess_sentence(sentence):
   sentence = sentence.lower().strip()
   # creating a space between a word and the punctuation following it
   # eg: "he is a boy." => "he is a boy ."
-  sentence = re.sub(r"([?.!,])", r" \1 ", sentence)
+  sentence = re.sub(r"([?.!,'])", r" \1 ", sentence)
   sentence = re.sub(r'[" "]+', " ", sentence)
   # replacing everything with space except (a-z, A-Z, ".", "?", "!", ",")
-  sentence = re.sub(r"[^a-zA-Z?.!,]+", " ", sentence)
+  sentence = re.sub(r"[^a-zA-Z?.!,']+", " ", sentence)
   sentence = sentence.strip()
   # adding a start and an end token to the sentence
   return sentence
 
 
-ENC_FILE_NAME = 'test.enc'
-DEC_FILE_NAME = 'test.dec'
+ENC_FILE_NAME = 'train.enc'
+DEC_FILE_NAME = 'train.dec'
 f_enc = open(ENC_FILE_NAME, 'r')
 f_dec = open(DEC_FILE_NAME, 'r')
 
@@ -44,3 +44,6 @@ print(cnt_all)
 
 pickle.dump(questions, out_enc)
 pickle.dump(answers, out_dec)
+
+print(questions[0])
+print(answers[0])

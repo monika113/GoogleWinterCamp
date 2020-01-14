@@ -14,21 +14,24 @@ Dialogs = []
 dialog = []
 i = 0
 
+questions = []
+answers = []
+
 while i < length:
     # start a dialog
     if csv_data["raw_character_text"][i] == person:
         if not start:
             if isinstance(csv_data["spoken_words"][i-1], str):
                 dialog.append(csv_data["spoken_words"][i-1])
-            else:
-                dialog.append("XXXX")
+                questions.append(csv_data["spoken_words"][i-1])
             start = True
         sentence = csv_data["spoken_words"][i]
         i += 1
-        while csv_data["raw_character_text"][i] == person:
-            sentence = sentence + ' ' + csv_data["spoken_words"][i]
-            i += 1
+        # while csv_data["raw_character_text"][i] == person:
+        #     sentence = sentence + ' ' + csv_data["spoken_words"][i]
+        #     i += 1
         dialog.append(sentence)
+        answers.append(sentence)
 
     # other person speaks
     if start:

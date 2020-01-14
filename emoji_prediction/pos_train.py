@@ -114,6 +114,9 @@ def train(model, iterator, optimizer, criterion):
         prediction = model(batch.text)
         prediction = prediction.permute(1, 0, 2)
         prediction = prediction.reshape(-1, list(prediction.size())[2])
+        print("prediction size:", prediction.size())
+        print("label size:", batch.label.size())
+        print("label reshaped size:", batch.label.reshape(-1).size())
         loss = criterion(prediction, batch.label.reshape(-1))
         acc = categorical_accuracy(prediction, batch.label.reshape(-1))
 

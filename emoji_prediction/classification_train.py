@@ -175,20 +175,20 @@ best_valid_acc = 0
 if not os.path.isdir(SAVE_DIR):
     os.makedirs(SAVE_DIR)
 
-model.load_state_dict(torch.load(MODEL_SAVE_PATH))
-epoch_acc = 0.0
-epoch_topk_acc = 0.0
-with torch.no_grad():
-    for batch in valid_iterator:
-        predictions = model(batch.text)
-        loss = criterion(predictions, batch.label)
-        acc = categorical_accuracy(predictions, batch.label)
-        topk_acc = topk_categorical_accuracy(predictions, batch.label)
-        epoch_acc += acc.item()
-        epoch_topk_acc += topk_acc
-    print("valid acc:", epoch_acc/len(valid_iterator), "topk_acc:", epoch_topk_acc/len(valid_iterator))
+# model.load_state_dict(torch.load(MODEL_SAVE_PATH))
+# epoch_acc = 0.0
+# epoch_topk_acc = 0.0
+# with torch.no_grad():
+#     for batch in valid_iterator:
+#         predictions = model(batch.text)
+#         loss = criterion(predictions, batch.label)
+#         acc = categorical_accuracy(predictions, batch.label)
+#         topk_acc = topk_categorical_accuracy(predictions, batch.label)
+#         epoch_acc += acc.item()
+#         epoch_topk_acc += topk_acc
+#     print("valid acc:", epoch_acc/len(valid_iterator), "topk_acc:", epoch_topk_acc/len(valid_iterator))
 
-best_valid_acc = epoch_acc/len(valid_iterator)
+# best_valid_acc = epoch_acc/len(valid_iterator)
 
 for epoch in range(N_EPOCHS):
     train_loss, train_acc = train(model, train_iterator, optimizer, criterion)
@@ -200,7 +200,7 @@ for epoch in range(N_EPOCHS):
         torch.save(model.state_dict(), MODEL_SAVE_PATH)
 
 def predict_class(sentence):
-    tokenized = word_tokenize(sentence)
+    tokenized = word_tokenize(sentence.lower())
     indexed = [TEXT.vocab.stoi[t] for t in tokenized]
     tensor = torch.LongTensor(indexed).to(device)
     tensor = tensor.unsqueeze(1)

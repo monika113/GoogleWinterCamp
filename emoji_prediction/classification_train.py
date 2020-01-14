@@ -109,6 +109,18 @@ model = model.to(device)
 criterion = criterion.to(device)
 
 
+def topk_categorical_accuracy(preds, y):
+    """
+    Returns accuracy per batch, i.e. if you get 8/10 right, this returns 0.8, NOT 8
+    """
+    correct_cnt = 0
+    for i in range(preds.size()[0].item()):
+        topk_preds = preds[i].topk(3)[1].tolist() # get the index of the max probability
+        correct = y[i].item()
+        if correct in topk_preds:
+            correct_cnt += 1
+    return float(correct_cnt)/y.shape[0].item()
+
 def categorical_accuracy(preds, y):
     """
     Returns accuracy per batch, i.e. if you get 8/10 right, this returns 0.8, NOT 8
@@ -155,7 +167,7 @@ def evaluate(model, iterator, criterion):
     return epoch_loss / len(iterator), epoch_acc / len(iterator)
 
 
-N_EPOCHS = 50
+N_EPOCHS = 0
 SAVE_DIR = 'models'
 MODEL_SAVE_PATH = os.path.join(SAVE_DIR, 'emoji_classification_model.pt')
 
@@ -163,6 +175,20 @@ best_valid_acc = 0
 if not os.path.isdir(SAVE_DIR):
     os.makedirs(SAVE_DIR)
 
+model.load_state_dict(torch.load(MODEL_SAVE_PATH))
+epoch_acc = 0.0
+epoch_topk_acc = 0.0
+with torch.no_grad():
+    for batch in valid_iterator:
+        predictions = model(batch.text)
+        loss = criterion(predictions, batch.label)
+        acc = categorical_accuracy(predictions, batch.label)
+        topk_acc = topk_categorical_accuracy(predictions, batch.label)
+        epoch_acc += acc.item()
+        epoch_topk_acc += topk_acc.item()
+    print("valid acc:", epoch_acc/len(valid_iterator), "topk_acc:", epoch_topk_acc/len(valid_iterator))
+
+best_valid_acc = epoch_acc/len(valid_iterator)
 
 for epoch in range(N_EPOCHS):
     train_loss, train_acc = train(model, train_iterator, optimizer, criterion)

@@ -10,7 +10,7 @@ $(function() {
     chatsock.onmessage = function(message) {
         var data = JSON.parse(message.data);
         chat_zone.append(
-            $("<p class='answer'></p>").text('Joey: ' + data.message)
+            $("<p class='answer'></p>").text('Simpson: ' + data.message)
         );
     };
 

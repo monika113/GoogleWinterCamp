@@ -55,8 +55,8 @@ def ws_receive(message):
 
     # Check eventual error
     if not answer:
-        answer = 'Error: Try a shorter sentence ðŸ˜œ'
-
+        # answer = 'Error: Try a shorter sentence orangleliu<span class="emoji emoji1f4d6"></span>'
+        answer = u'\U0001F60D'+'test'
     logger.info('{}: {} -> {}'.format(clientName, question, answer))
 
     # Send the prediction back

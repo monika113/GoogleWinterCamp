@@ -15,3 +15,6 @@ MODEL_PATH = 'model/step01.h5'
 TOKENIZER_PATH = 'tokenizer/token01'
 INPUT_PATH = '../cornell_data/train.enc.pk'
 OUTPUT_PATH = '../cornell_data/train.dec.pk'
+
+EVA_MODEL_PATH = 'model/step_new.h5'
+EVA_TOKENIZER_PATH = 'tokenizer/token01'

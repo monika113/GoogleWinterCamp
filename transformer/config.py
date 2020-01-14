@@ -9,7 +9,7 @@ NUM_HEADS = 8
 UNITS = 512
 DROPOUT = 0.1
 
-EPOCHS = 20
+EPOCHS = 1
 
 MODEL_PATH = 'model/step01.h5'
 TOKENIZER_PATH = 'tokenizer/token01'

@@ -67,8 +67,8 @@ TEXT = data.Field(tokenize=word_tokenize)
 LABEL = data.LabelField()
 
 train_data, valid_data = data.TabularDataset.splits(
-path='data', train='train.csv',
-validation='dev.csv',
+path='data', train='train_c.csv',
+validation='dev_c.csv',
 format='csv', skip_header=True,
 csv_reader_params={'delimiter':'\t'},
 fields=[('text',TEXT),('label',LABEL)])
@@ -185,6 +185,6 @@ def predict_class(sentence):
 model.load_state_dict(torch.load(MODEL_SAVE_PATH))
 
 while True:
-    sent = input("input a sentence")
+    sent = input("input a sentence:")
     predicted = predict_class(sent)
     print("Predicted emoji:",predicted)

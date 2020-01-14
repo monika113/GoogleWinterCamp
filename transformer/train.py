@@ -9,33 +9,33 @@ from argparse import ArgumentParser
 
 import config
 from util import get_dataset
-from model import transformer
+from model import transformer, CustomSchedule, loss_function, accuracy
 
 
 def train(inputs, outputs, pre_train=False):
     tf.keras.backend.clear_session()
     dataset, VOCAB_SIZE, _ = get_dataset(inputs, outputs)
     if pre_train:
-        model = tf.keras.models.load_model(config.MODEL_PATH)
+        cur_model = tf.keras.models.load_model(config.MODEL_PATH)
         print('load pre train model success!')
     else:
-        model = transformer(
+        cur_model = transformer(
             vocab_size=VOCAB_SIZE,
             num_layers=config.NUM_LAYERS,
             units=config.UNITS,
             d_model=config.D_MODEL,
             num_heads=config.NUM_HEADS,
             dropout=config.DROPOUT)
-        learning_rate = model.CustomSchedule(config.D_MODEL)
+        learning_rate = CustomSchedule(config.D_MODEL)
 
         optimizer = tf.keras.optimizers.Adam(
             learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9)
 
-        model.compile(optimizer=optimizer, loss=model.loss_function, metrics=[model.accuracy])
+        cur_model.compile(optimizer=optimizer, loss=loss_function, metrics=[accuracy])
         print('build model success, start training...')
-        model.fit(dataset, epochs=config.EPOCHS)
+        cur_model.fit(dataset, epochs=config.EPOCHS)
 
-        model.save(config.MODEL_PATH)
+        cur_model.save(config.MODEL_PATH)
         print()
 
 

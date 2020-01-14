@@ -52,11 +52,11 @@ def get_dataset(inputs, outputs):
     print('Number of samples: {}'.format(len(inputs)))
     dataset = tf.data.Dataset.from_tensor_slices((
         {
-            'inputs': inputs,
-            'dec_inputs': outputs[:, :-1]
+            'inputs': tokenized_inputs,
+            'dec_inputs': tokenized_outputs[:, :-1]
         },
         {
-            'outputs': outputs[:, 1:]
+            'outputs': tokenized_outputs[:, 1:]
         },
     ))
 

@@ -8,16 +8,15 @@ import pickle
 from argparse import ArgumentParser
 
 import config
-from util import get_dataset
+from util import get_dataset, get_args
 from model import transformer, CustomSchedule, loss_function, accuracy
 
 
-def train(inputs, outputs, pre_train=False):
+def train(inputs, outputs, args):
     tf.keras.backend.clear_session()
-    dataset, VOCAB_SIZE, _ = get_dataset(inputs, outputs)
-    if pre_train:
-        cur_model = tf.keras.models.load_model(config.MODEL_PATH)
-        print('load pre train model success!')
+    dataset, VOCAB_SIZE, _ = get_dataset(inputs, outputs, args)
+    if args['pre_train']:
+        cur_model = tf.keras.models.load_model(args['pre_train_model_path'])
     else:
         cur_model = transformer(
             vocab_size=VOCAB_SIZE,
@@ -35,7 +34,7 @@ def train(inputs, outputs, pre_train=False):
         print('build model success, start training...')
         cur_model.fit(dataset, epochs=config.EPOCHS)
 
-        cur_model.save(config.MODEL_PATH)
+        cur_model.save(args['save_model_path'])
         print()
 
 
@@ -46,5 +45,6 @@ if __name__ == "__main__":
     questions = pickle.load(questions_infile)
     answers = pickle.load(answers_infile)
     print('load data success!')
-    train(questions, answers, pre_train=False)
+    args = get_args()
+    train(questions, answers, args)
 

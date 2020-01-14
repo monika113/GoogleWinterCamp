@@ -14,7 +14,7 @@ import pickle
 def evaluate(sentence, tokenizer):
     # sentence = model.preprocess_sentence(sentence)
 
-    tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(config.TOKENIZER_PATH)
+    # tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(config.TOKENIZER_PATH)
     START_TOKEN, END_TOKEN = [tokenizer.vocab_size], [tokenizer.vocab_size + 1]
     sentence = tf.expand_dims(
         START_TOKEN + tokenizer.encode(sentence) + END_TOKEN, axis=0)
@@ -41,8 +41,9 @@ def evaluate(sentence, tokenizer):
     return tf.squeeze(output, axis=0)
 
 
-def predict(sentence, tokenizer):
-    prediction = evaluate(sentence)
+def predict(sentence):
+    tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(config.TOKENIZER_PATH)
+    prediction = evaluate(sentence,tokenizer)
 
     predicted_sentence = tokenizer.decode(
         [i for i in prediction if i < tokenizer.vocab_size])

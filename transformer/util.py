@@ -69,9 +69,11 @@ def get_dataset(inputs, outputs, args):
 
 def get_args():
     parser = ArgumentParser()
-    parser.add_argument("--pre_train", type=int, default=False,
+    parser.add_argument("--pre_train", type=int, default=0,
                         help="load pre train model or not")
-    parser.add_argument("--load_tokenizer", type=int, default=False,
+    parser.add_argument("--epochs", type=int, default=config.EPOCHS,
+                        help="epoch")
+    parser.add_argument("--load_tokenizer", type=int, default=0,
                         help="load tokenizer or not")
     parser.add_argument("--pre_train_model_path", type=str, default=config.MODEL_PATH, help="Path of pre_train model")
     parser.add_argument("--save_model_path", type=str, default=config.MODEL_PATH, help="Path to save model")

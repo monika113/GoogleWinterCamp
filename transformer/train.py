@@ -32,7 +32,7 @@ def train(inputs, outputs, args):
 
         cur_model.compile(optimizer=optimizer, loss=loss_function, metrics=[accuracy])
         print('build model success, start training...')
-        cur_model.fit(dataset, epochs=config.EPOCHS)
+        cur_model.fit(dataset, epochs=args.epochs)
 
         cur_model.save(args.save_model_path)
         print()

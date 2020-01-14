@@ -119,7 +119,7 @@ def topk_categorical_accuracy(preds, y):
         correct = y[i].item()
         if correct in topk_preds:
             correct_cnt += 1
-    return float(correct_cnt)/y.shape[0].item()
+    return float(correct_cnt)/y.shape[0]
 
 def categorical_accuracy(preds, y):
     """

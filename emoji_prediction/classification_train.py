@@ -185,7 +185,7 @@ with torch.no_grad():
         acc = categorical_accuracy(predictions, batch.label)
         topk_acc = topk_categorical_accuracy(predictions, batch.label)
         epoch_acc += acc.item()
-        epoch_topk_acc += topk_acc.item()
+        epoch_topk_acc += topk_acc
     print("valid acc:", epoch_acc/len(valid_iterator), "topk_acc:", epoch_topk_acc/len(valid_iterator))
 
 best_valid_acc = epoch_acc/len(valid_iterator)

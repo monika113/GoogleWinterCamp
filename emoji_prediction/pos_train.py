@@ -140,6 +140,7 @@ def train(model, iterator, optimizer, criterion):
     model.train()
 
     batch_cnt = 0
+    case_cnt = 0
     for batch in iterator:
         optimizer.zero_grad()
 
@@ -160,6 +161,9 @@ def train(model, iterator, optimizer, criterion):
         epoch_acc += acc.item()
         
         batch_cnt += 1
+        case_cnt += len(batch)
+        # if case_cnt % 10000 == 0:
+        #     print(case_cnt)
         
     return epoch_loss / len(iterator), epoch_acc / len(iterator)
 
@@ -223,7 +227,8 @@ train_iterator, valid_iterator = data.BucketIterator.splits(
 )
 
 optimizer = optim.Adam(model.parameters())
-criterion = FocalLoss(len(LABEL.vocab))
+# criterion = FocalLoss(len(LABEL.vocab))
+criterion = torch.nn.CrossEntropyLoss()
 model = model.to(device)
 criterion = criterion.to(device)
 
@@ -245,6 +250,7 @@ for epoch in range(N_EPOCHS):
     valid_loss, valid_acc = evaluate(model, valid_iterator, criterion)
     print("Epoch", epoch, "Valid loss", valid_loss, "Acc.", valid_acc)
     if valid_acc > best_valid_acc:
+        print("Save New Model")
         best_valid_acc = valid_acc
         best_valid_loss = valid_loss
         torch.save(model.state_dict(), MODEL_SAVE_PATH)

@@ -223,7 +223,7 @@ train_iterator, valid_iterator = data.BucketIterator.splits(
 )
 
 optimizer = optim.Adam(model.parameters())
-criterion = FocalLoss()
+criterion = FocalLoss(len(LABEL.vocab))
 model = model.to(device)
 criterion = criterion.to(device)
 

@@ -8,13 +8,9 @@ def build_tokenizer(inputs, outputs):
     # Build tokenizer using tfds for both questions and answers
     tokenizer = tfds.features.text.SubwordTextEncoder.build_from_corpus(
         inputs + outputs, target_vocab_size=2**13)
-    try:
-        tokenizer.save_to_file(config.TOKENIZER_PATH)
-    except:
-        print('tokenizer saved error')
-    else:
-        print('tokenizer saved success')
 
+    tokenizer.save_to_file(config.TOKENIZER_PATH)
+    
     # Define start and end token to indicate the start and end of a sentence
     START_TOKEN, END_TOKEN = [tokenizer.vocab_size], [tokenizer.vocab_size + 1]
 
@@ -65,4 +61,12 @@ def get_dataset(inputs, outputs):
     dataset = dataset.batch(config.BATCH_SIZE)
     dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
     return dataset, VOCAB_SIZE, tokenizer
+
+if __name__ == "__main__":
+    questions_infile = open(config.INPUT_PATH, 'rb')
+    answers_infile = open(config.OUTPUT_PATH, 'rb')
+    questions = pickle.load(questions_infile)
+    answers = pickle.load(answers_infile)
+    print('load data success!')
+    build_tokenizer(questions, answers)
 

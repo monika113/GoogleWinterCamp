@@ -55,7 +55,7 @@ def ws_receive(message):
 
     # Check eventual error
     if not answer:
-        answer = 'Error: Try a shorter sentence'
+        answer = 'Error: Try a shorter sentence ðŸ˜œ'
 
     logger.info('{}: {} -> {}'.format(clientName, question, answer))
 

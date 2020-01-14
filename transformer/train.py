@@ -17,7 +17,7 @@ def train(inputs, outputs, pre_train=False):
     dataset, VOCAB_SIZE, _ = get_dataset(inputs, outputs)
     if pre_train:
         model = tf.keras.models.load_model(config.MODEL_PATH)
-
+        print('load pre train model success!')
     else:
         model = transformer(
             vocab_size=VOCAB_SIZE,
@@ -32,10 +32,11 @@ def train(inputs, outputs, pre_train=False):
             learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9)
 
         model.compile(optimizer=optimizer, loss=model.loss_function, metrics=[model.accuracy])
-
+        print('build model success, start training...')
         model.fit(dataset, epochs=config.EPOCHS)
 
         model.save(config.MODEL_PATH)
+        print()
 
 
 if __name__ == "__main__":
@@ -44,5 +45,6 @@ if __name__ == "__main__":
     answers_infile = open(config.OUTPUT_PATH, 'rb')
     questions = pickle.load(questions_infile)
     answers = pickle.load(answers_infile)
+    print('load data success!')
     train(questions, answers, pre_train=False)
 

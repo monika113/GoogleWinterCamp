@@ -8,8 +8,12 @@ def build_tokenizer(inputs, outputs):
     # Build tokenizer using tfds for both questions and answers
     tokenizer = tfds.features.text.SubwordTextEncoder.build_from_corpus(
         inputs + outputs, target_vocab_size=2**13)
-
-    tokenizer.save_to_file(config.TOKENIZER_PATH)
+    try:
+        tokenizer.save_to_file(config.TOKENIZER_PATH)
+    except:
+        print('tokenizer saved error')
+    else:
+        print('tokenizer saved success')
 
     # Define start and end token to indicate the start and end of a sentence
     START_TOKEN, END_TOKEN = [tokenizer.vocab_size], [tokenizer.vocab_size + 1]

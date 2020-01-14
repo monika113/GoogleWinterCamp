@@ -1,0 +1,8 @@
+.vscode
+experiments/
+dataset_cache*
+runs/
+ParlAI/
+__pycache__
+.env/
+.DS_Store

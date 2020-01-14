@@ -114,7 +114,7 @@ def topk_categorical_accuracy(preds, y):
     Returns accuracy per batch, i.e. if you get 8/10 right, this returns 0.8, NOT 8
     """
     correct_cnt = 0
-    for i in range(preds.size()[0].item()):
+    for i in range(preds.size()[0]):
         topk_preds = preds[i].topk(3)[1].tolist() # get the index of the max probability
         correct = y[i].item()
         if correct in topk_preds:

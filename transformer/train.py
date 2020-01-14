@@ -22,16 +22,16 @@ def train(inputs, outputs, args):
         d_model=config.D_MODEL,
         num_heads=config.NUM_HEADS,
         dropout=config.DROPOUT)
+    learning_rate = CustomSchedule(config.D_MODEL)
+
+    optimizer = tf.keras.optimizers.Adam(
+        learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9)
+
+    cur_model.compile(optimizer=optimizer, loss=loss_function, metrics=[accuracy])
     if args.pre_train:
         # cur_model = tf.keras.models.load_model(args.pre_train_model_path)
         cur_model.load_weights(args.pre_train_model_path)
-    else:
-        learning_rate = CustomSchedule(config.D_MODEL)
-
-        optimizer = tf.keras.optimizers.Adam(
-            learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9)
-
-        cur_model.compile(optimizer=optimizer, loss=loss_function, metrics=[accuracy])
+        print('load pre train model success!')
     print('build model success, start training...')
     cur_model.fit(dataset, epochs=args.epochs)
 

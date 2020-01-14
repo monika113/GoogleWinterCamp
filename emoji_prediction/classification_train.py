@@ -115,7 +115,7 @@ def topk_categorical_accuracy(preds, y):
     """
     correct_cnt = 0
     for i in range(preds.size()[0]):
-        topk_preds = preds[i].topk(3)[1].tolist() # get the index of the max probability
+        topk_preds = preds[i].topk(5)[1].tolist() # get the index of the max probability
         correct = y[i].item()
         if correct in topk_preds:
             correct_cnt += 1

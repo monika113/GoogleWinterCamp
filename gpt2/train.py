@@ -183,7 +183,7 @@ def preprocess_que_ans_data(args, tokenizer, n_ctx):
             for dialogue_id in dialogue_ids:
                 f.write(str(dialogue_id) + ' ')
             # 最后一条记录不添加换行符
-            if dialogue_index < len(train_data) - 1:
+            if dialogue_index < len(data_ques) - 1:
                 f.write("\n")
     logger.info("finish preprocessing raw data,the result is stored in {}".format(args.train_tokenized_path))
 

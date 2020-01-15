@@ -68,8 +68,8 @@ def get_dataset_new(tokenizer, dataset_path, dataset_cache):
         logger.info("Download dataset from %s", dataset_path)
         data_path = open(dataset_path, 'rb')
         data = pickle.load(data_path)
-        train_data = random.choice(data, k = int(len(data)*0.7))
-        valid_data = random.choice(data, k = int(len(data)*0.3))
+        train_data = random.choices(data, k = int(len(data)*0.7))
+        valid_data = random.choices(data, k = int(len(data)*0.3))
         dataset = {}
         dataset['train'] = train_data
         dataset['valid'] = valid_data

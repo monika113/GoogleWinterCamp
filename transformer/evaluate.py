@@ -74,7 +74,7 @@ class Chatbot:
             logits[indices_to_remove] = -float('Inf')
 
             probabilities = F.softmax(logits, dim=-1)
-            predicted_id = torch.multinomial(probabilities, 1)
+            predicted_id = torch.multinomial(probabilities, 1).item()
 
 
             # # use top-p 
@@ -91,6 +91,7 @@ class Chatbot:
 
 
             # return the result if the predicted_id is equal to the end token
+            print("type end_token[0]", type(END_TOKEN[0]))
             if tf.equal(predicted_id, END_TOKEN[0]):
                 break
 

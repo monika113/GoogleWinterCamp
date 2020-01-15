@@ -2,6 +2,7 @@ import pandas as pd
 import math
 import nltk
 from nltk.tokenize import word_tokenize
+import pickle
 
 # TODO: still have the nan error
 person = 'Homer Simpson'

@@ -155,7 +155,7 @@ def main():
                 filtered_logits = top_k_top_p_filtering(next_token_logits, top_k=args.topk, top_p=args.topp)
                 # torch.multinomial表示从候选集合中无放回地进行抽取num_samples个元素，权重越高，抽到的几率越高，返回元素的下标
                 next_token = torch.multinomial(F.softmax(filtered_logits, dim=-1), num_samples=1)
-                if next_token == tokenizer.convert_ids_to_tokens('[SEP]'):  # 遇到[SEP]则表明response生成结束
+                if next_token == tokenizer.convert_tokens_to_ids('[SEP]'):  # 遇到[SEP]则表明response生成结束
                     break
                 generated.append(next_token.item())
                 curr_input_tensor = torch.cat((curr_input_tensor, next_token), dim=0)

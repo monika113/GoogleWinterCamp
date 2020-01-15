@@ -48,7 +48,7 @@ class Chatbot:
             # use top-p 
             sorted_logits = tf.sort(predictions, direction='DESCENDING')
             sorted_indices = tf.argsort(predictions, direction='DESCENDING')
-            cumulative_probs = tf.cumsum(tf.nn.softmax(sorted_logits, dim=-1), axis=-1, exclusive=True)
+            cumulative_probs = tf.cumsum(tf.nn.softmax(sorted_logits, axis=-1), axis=-1, exclusive=True)
             sorted_indices_to_remove = cumulative_probs > 0.9
             indices_to_remove = sorted_indices[sorted_indices_to_remove]
             predictions[indices_to_remove] = -float('Inf')

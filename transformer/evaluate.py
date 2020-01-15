@@ -56,9 +56,11 @@ class Chatbot:
 
             # logits = torch.tensor(tf.make_ndarray(predictions.op.get_attr('value')))
             logits = torch.tensor(np.array(predictions))
+            print("logits size:", logits.size())
 
             sorted_logits, sorted_indices = torch.sort(logits, descending=True)
             cumulative_probabilities = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
+            print("cumulative prob size:", cumulative_probabilities.size())
 
             # Remove tokens with cumulative probability above the threshold
             sorted_indices_to_remove = cumulative_probabilities > 0.9
@@ -68,10 +70,9 @@ class Chatbot:
 
             # Back to unsorted indices and set them to -infinity
             indices_to_remove = sorted_indices[sorted_indices_to_remove]
+            print("indices to remove:", indices_to_remove.size())
             logits[indices_to_remove] = -float('Inf')
 
-            indices_to_remove = logits < -float('Inf')
-            logits[indices_to_remove] = -float('Inf')
             probabilities = F.softmax(logits, dim=-1)
             predicted_id = torch.multinomial(probabilities, 1)
 

@@ -136,7 +136,7 @@ def main():
             text = input("user:")
             if args.save_samples_path:
                 samples_file.write("user:{}\n".format(text))
-            history.append(tokenizer.encode(text))
+            history.append(tokenizer.convert_tokens_to_ids(text.lowe().split()))
             input_ids = [tokenizer.convert_tokens_to_ids('[CLS]')]  # 每个input以[CLS]为开头
 
             for history_id, history_utr in enumerate(history[-args.max_history_len:]):

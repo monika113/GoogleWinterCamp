@@ -80,6 +80,8 @@ def get_args():
     parser.add_argument("--step", type=int, default=1, help="step of transformer")
     parser.add_argument("--save_tokenizer_path", type=str, default=config.TOKENIZER_PATH, help="Path to save tokenizer")
     parser.add_argument("--load_tokenizer_path", type=str, default=config.TOKENIZER_PATH, help="Path to load tokenizer")
+    parser.add_argument("--input_path", type=str, default=config.INPUT_PATH, help="Path of input data")
+    parser.add_argument("--output_path", type=str, default=config.OUTPUT_PATH, help="Path of output data")
     args = parser.parse_args()
     return args
 

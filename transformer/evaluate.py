@@ -1,6 +1,9 @@
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
+import torch
+import torch.nn.functional as F
+
 import os
 import re
 import numpy as np
@@ -9,6 +12,7 @@ import pickle
 import config
 from util import get_dataset, get_args
 from model import transformer, CustomSchedule, loss_function, accuracy
+
 
 class Chatbot:
     def __init__(self):
@@ -45,17 +49,39 @@ class Chatbot:
             # select the last word from the seq_len dimension
             predictions = predictions[:, -1:, :]
 
-            # use top-p 
-            sorted_logits = tf.sort(predictions, direction='DESCENDING')
-            sorted_indices = tf.argsort(predictions, direction='DESCENDING')
-            cumulative_probs = tf.cumsum(tf.nn.softmax(sorted_logits, axis=-1), axis=-1, exclusive=True)
-            sorted_indices_to_remove = cumulative_probs > 0.9
+            
+            logits = torch.tensor(tf.make_ndarray(predictions))
+
+            sorted_logits, sorted_indices = torch.sort(logits, descending=True)
+            cumulative_probabilities = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
+
+            # Remove tokens with cumulative probability above the threshold
+            sorted_indices_to_remove = cumulative_probabilities > 0.9
+            # Shift the indices to the right to keep also the first token above the threshold
+            sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
+            sorted_indices_to_remove[..., 0] = 0
+
+            # Back to unsorted indices and set them to -infinity
             indices_to_remove = sorted_indices[sorted_indices_to_remove]
-            indices_to_remove = tf.make_ndarray(indices_to_remove)
-            predictions[indices_to_remove] = -float('Inf')
-            probabilities = tf.nn.softmax(predictions, axis=-1)
-            sampled = tf.random.categorical(probabilities, 1)
-            predicted_id = tf.cast(tf.argmax(sampled, axis=-1), tf.int32)
+            logits[indices_to_remove] = -float('Inf')
+
+            indices_to_remove = logits < -float('Inf')
+            logits[indices_to_remove] = -float('Inf')
+            probs = F.softmax(logits, dim=-1)
+            predicted_id = torch.multinomial(probabilities, 1)
+
+
+            # # use top-p 
+            # sorted_logits = tf.sort(predictions, direction='DESCENDING')
+            # sorted_indices = tf.argsort(predictions, direction='DESCENDING')
+            # cumulative_probs = tf.cumsum(tf.nn.softmax(sorted_logits, axis=-1), axis=-1, exclusive=True)
+            # sorted_indices_to_remove = cumulative_probs > 0.9
+            # indices_to_remove = sorted_indices[sorted_indices_to_remove]
+            # indices_to_remove = tf.make_ndarray(indices_to_remove)
+            # predictions[indices_to_remove] = -float('Inf')
+            # probabilities = tf.nn.softmax(predictions, axis=-1)
+            # sampled = tf.random.categorical(probabilities, 1)
+            # predicted_id = tf.cast(tf.argmax(sampled, axis=-1), tf.int32)
 
 
             # return the result if the predicted_id is equal to the end token

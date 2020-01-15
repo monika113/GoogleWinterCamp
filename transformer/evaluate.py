@@ -153,11 +153,11 @@ if __name__ == "__main__":
     args = get_args()
     bot = Chatbot()
     bot.load_model(args)
+    topk = input('topk')
+    topp = input('topp')
     while True:
         sentence = input('say something: ')
-        topk = input('topk')
-        topp = input('topp')
-        prediction = bot.evaluate(sentence, top_k=int(topk), top_p=int(topp))
+        prediction = bot.evaluate(sentence, top_k=int(topk), top_p=float(topp))
 
         predicted_sentence = bot.tokenizer.decode(
             [i for i in prediction if i < bot.tokenizer.vocab_size])

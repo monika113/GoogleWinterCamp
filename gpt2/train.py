@@ -407,8 +407,7 @@ def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = args.device
 
     # 初始化tokenizer
-    tokenizer = GPT2Tokenizer()
-    tokenizer = tokenizer.from_pretrained('gpt2')
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
     # tokenizer的字典大小
     vocab_size = len(tokenizer)
 

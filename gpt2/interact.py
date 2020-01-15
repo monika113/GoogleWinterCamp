@@ -168,7 +168,7 @@ def main():
             print(generated)
             text = tokenizer.convert_ids_to_tokens(generated)
             print(text)
-            print("chatbot:" + "".join(text))
+            print("chatbot:" + " ".join(text))
             if args.save_samples_path:
                 samples_file.write("chatbot:{}\n".format("".join(text)))
         except KeyboardInterrupt:

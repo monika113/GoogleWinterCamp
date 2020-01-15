@@ -45,6 +45,6 @@ if __name__ == "__main__":
     answers_infile = open(args.output_path, 'rb')
     questions = pickle.load(questions_infile)
     answers = pickle.load(answers_infile)
-    print('load data success, from ' + args.inputpath)
+    print('load data success, from ' + args.input_path)
     train(questions, answers, args)
 

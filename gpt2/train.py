@@ -427,8 +427,6 @@ def main():
     elif args.raw and not args.train_mmi:  # 如果当前是要训练对话生成模型
         preprocess_que_ans_data(args, tokenizer, n_ctx)
     # 是否使用多块GPU进行并行运算
-    exit()
-
     multi_gpu = False
     if args.cuda and torch.cuda.device_count() > 1:
         logger.info("Let's use GPUs to train")

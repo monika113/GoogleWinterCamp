@@ -11,7 +11,7 @@ from tqdm import tqdm
 from torch.nn import DataParallel
 import logging
 from transformers.modeling_gpt2 import GPT2Config, GPT2LMHeadModel
-from transformers import BertTokenizer
+from transformers import GPT2Tokenizer
 from os.path import join, exists
 from itertools import zip_longest, chain
 # from chatbot.model import DialogueGPT2Model
@@ -38,7 +38,6 @@ def set_interact_args():
     parser.add_argument('--model_config', default='config/model_config_dialogue_small.json', type=str, required=False,
                         help='模型参数')
     parser.add_argument('--log_path', default='data/interacting.log', type=str, required=False, help='interact日志存放位置')
-    parser.add_argument('--voca_path', default='vocabulary/vocab_small.txt', type=str, required=False, help='选择词库')
     parser.add_argument('--dialogue_model_path', default='dialogue_model_path/', type=str, required=False, help='对话模型路径')
     parser.add_argument('--save_samples_path', default="sample/", type=str, required=False, help="保存聊天记录的文件路径")
     parser.add_argument('--repetition_penalty', default=1.0, type=float, required=False,
@@ -117,7 +116,7 @@ def main():
     device = 'cuda' if args.cuda else 'cpu'
     logger.info('using device:{}'.format(device))
     os.environ["CUDA_VISIBLE_DEVICES"] = args.device
-    tokenizer = BertTokenizer(vocab_file=args.voca_path)
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
     model = GPT2LMHeadModel.from_pretrained(args.dialogue_model_path)
     model.to(device)
     model.eval()

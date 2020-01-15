@@ -91,13 +91,13 @@ class Chatbot:
 
 
             # return the result if the predicted_id is equal to the end token
-            print("type end_token[0]", type(END_TOKEN[0]))
+            # print("type end_token[0]", type(END_TOKEN[0]))
             if tf.equal(predicted_id, END_TOKEN[0]):
                 break
 
             # concatenated the predicted_id to the output which is given to the decoder
             # as its input.
-            print("output size:", tf.shape(output))
+            # print("output size:", tf.shape(output))
             output = tf.concat([output, np.array([[predicted_id]])], axis=-1)
 
         return tf.squeeze(output, axis=0)

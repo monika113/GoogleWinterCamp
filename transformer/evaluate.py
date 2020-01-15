@@ -9,6 +9,10 @@ import re
 import numpy as np
 import pickle
 
+import os
+cur_dir = os.path.abspath(os.path.dirname(__file__))
+import sys
+sys.path.append(cur_dir)
 import config
 from util import get_dataset, get_args
 from model import transformer, CustomSchedule, loss_function, accuracy

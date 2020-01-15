@@ -429,7 +429,7 @@ def main():
     if args.raw and args.train_mmi:  # 如果当前是要训练MMI模型
         preprocess_mmi_raw_data(args, tokenizer, n_ctx)
     elif args.raw and not args.train_mmi:  # 如果当前是要训练对话生成模型
-        preprocess_raw_data(args, tokenizer, n_ctx)
+        preprocess_que_ans_data(args, tokenizer, n_ctx)
     # 是否使用多块GPU进行并行运算
     exit()
 

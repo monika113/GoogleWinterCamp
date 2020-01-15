@@ -288,7 +288,7 @@ def train(model, device, train_list, multi_gpu, args):
 
     # 设置优化器，并且在初始训练时，使用warmup策略
     optimizer = transformers.AdamW(model.parameters(), lr=args.lr, correct_bias=True)
-    scheduler = transformers.WarmupLinearSchedule(optimizer, warmup_steps=args.warmup_steps, t_total=total_steps)
+    scheduler = transformers.get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps, num_training_steps=total_steps)
 
     logger.info('starting training')
     # 用于统计每次梯度累计的loss

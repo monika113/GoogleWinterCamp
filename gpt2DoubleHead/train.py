@@ -17,8 +17,7 @@ from ignite.metrics import Accuracy, Loss, MetricsLambda, RunningAverage
 from ignite.contrib.handlers import ProgressBar, PiecewiseLinear
 from ignite.contrib.handlers.tensorboard_logger import TensorboardLogger, OutputHandler, OptimizerParamsHandler
 from pytorch_transformers import (AdamW, OpenAIGPTDoubleHeadsModel, OpenAIGPTTokenizer,
-                                  GPT2DoubleHeadsModel, GPT2Tokenizer, WEIGHTS_NAME, CONFIG_NAME)
-
+                                  GPT2DoubleHeadsModel, GPT2Tokenizer, GPT2Config, WEIGHTS_NAME, CONFIG_NAME)
 from utils import get_dataset_new, make_logdir
 
 SPECIAL_TOKENS = ["<bos>", "<eos>", "<speaker1>", "<speaker2>", "<pad>"]
@@ -128,7 +127,7 @@ def train():
     parser.add_argument("--lm_coef", type=float, default=1.0, help="LM loss coefficient")
     parser.add_argument("--mc_coef", type=float, default=1.0, help="Multiple-choice loss coefficient")
     parser.add_argument("--max_norm", type=float, default=1.0, help="Clipping gradient norm")
-    parser.add_argument("--n_epochs", type=int, default=3, help="Number of training epochs")
+    parser.add_argument("--n_epochs", type=int, default=1, help="Number of training epochs")
     parser.add_argument("--personality_permutations", type=int, default=1, help="Number of permutations of personality sentences")
     parser.add_argument("--eval_before_start", action='store_true', help="If true start with a first evaluation before training")
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu", help="Device (cuda or cpu)")
@@ -151,9 +150,9 @@ def train():
     tokenizer_class = GPT2Tokenizer  # cant use Autotokenizer because checkpoint could be a Path
     tokenizer = tokenizer_class.from_pretrained(args.model_checkpoint)
 
-
-    model_class = GPT2DoubleHeadsModel
-    model = model_class.from_pretrained(args.model_checkpoint)
+    model_config = GPT2Config.from_json_file('config/model_config_dialogue_small.json')
+    model_class = GPT2DoubleHeadsModel(config=model_config)
+    model = model_class.from_pretrained('gpt2')
     model.to(args.device)
     # Add special tokens if they are not already added
     add_special_tokens_(model, tokenizer)

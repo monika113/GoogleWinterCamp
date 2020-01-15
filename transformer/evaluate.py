@@ -23,7 +23,7 @@ class Chatbot:
         self.bot = None
         self.tokenizer = None
 
-    def evaluate(self, sentence):
+    def evaluate(self, sentence, top_k=8, top_p=0, threshold=-float('Inf'), filter_value=-float('Inf')):
         # sentence = model.preprocess_sentence(sentence)
 
         # tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(config.TOKENIZER_PATH)
@@ -58,20 +58,29 @@ class Chatbot:
             logits = torch.tensor(np.array(predictions)).squeeze(0).squeeze(0)
             # print("logits size:", logits.size())
 
-            sorted_logits, sorted_indices = torch.sort(logits, descending=True)
-            cumulative_probabilities = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
-            # print("cumulative prob size:", cumulative_probabilities.size())
+            if top_k > 0:
+                # Remove all tokens with a probability less than the last token in the top-k tokens
+                indices_to_remove = logits < torch.topk(logits, top_k)[0][..., -1, None]
+                logits[indices_to_remove] = filter_value
+            
+            if top_p > 0.0:
+                sorted_logits, sorted_indices = torch.sort(logits, descending=True)
+                cumulative_probabilities = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
+                # print("cumulative prob size:", cumulative_probabilities.size())
 
-            # Remove tokens with cumulative probability above the threshold
-            sorted_indices_to_remove = cumulative_probabilities > 0.9
-            # Shift the indices to the right to keep also the first token above the threshold
-            sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
-            sorted_indices_to_remove[..., 0] = 0
+                # Remove tokens with cumulative probability above the threshold
+                sorted_indices_to_remove = cumulative_probabilities > top_k
+                # Shift the indices to the right to keep also the first token above the threshold
+                sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
+                sorted_indices_to_remove[..., 0] = 0
 
-            # Back to unsorted indices and set them to -infinity
-            indices_to_remove = sorted_indices[sorted_indices_to_remove]
-            # print("indices to remove:", indices_to_remove.size())
-            logits[indices_to_remove] = -float('Inf')
+                # Back to unsorted indices and set them to -infinity
+                indices_to_remove = sorted_indices[sorted_indices_to_remove]
+                # print("indices to remove:", indices_to_remove.size())
+                logits[indices_to_remove] = filter_value
+            
+            indices_to_remove = logits < threshold
+            logits[indices_to_remove] = filter_value
 
             probabilities = F.softmax(logits, dim=-1)
             predicted_id = torch.multinomial(probabilities, 1).item()
@@ -144,7 +153,15 @@ if __name__ == "__main__":
     args = get_args()
     bot = Chatbot()
     bot.load_model(args)
+    topk = input('topk')
+    topp = input('topp')
     while True:
         sentence = input('say something: ')
-        sentence = bot.predict(sentence)
+        prediction = bot.evaluate(sentence, top_k=int(topk), top_p=float(topp))
+
+        predicted_sentence = bot.tokenizer.decode(
+            [i for i in prediction if i < bot.tokenizer.vocab_size])
+
+        print('Input: {}'.format(sentence))
+        print('Output: {}'.format(predicted_sentence))
         print('')

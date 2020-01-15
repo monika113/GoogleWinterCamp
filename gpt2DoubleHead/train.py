@@ -172,13 +172,9 @@ def train():
             mc_labels=mc_labels, lm_labels=lm_labels
         )
         loss = (lm_loss * args.lm_coef + mc_loss * args.mc_coef) / args.gradient_accumulation_steps
-        if args.fp16:
-            with amp.scale_loss(loss, optimizer) as scaled_loss:
-                scaled_loss.backward()
-            torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), args.max_norm)
-        else:
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_norm)
+
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_norm)
         if engine.state.iteration % args.gradient_accumulation_steps == 0:
             optimizer.step()
             optimizer.zero_grad()

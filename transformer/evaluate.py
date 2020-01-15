@@ -95,6 +95,21 @@ class Chatbot:
         print('load model success')
         return self.tokenizer, self.bot
 
+    def load_model(self):
+        self.tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(config.TOKENIZER_PATH)
+        VOCAB_SIZE = self.tokenizer.vocab_size + 2
+        model = transformer(
+            vocab_size=VOCAB_SIZE,
+            num_layers=config.NUM_LAYERS,
+            units=config.UNITS,
+            d_model=config.D_MODEL,
+            num_heads=config.NUM_HEADS,
+            dropout=config.DROPOUT)
+        model.load_weights(config.MODEL_PATH)
+        self.bot = model
+        print('load model success')
+        return self.tokenizer, self.bot
+
 
 if __name__ == "__main__":
     # feed the model with its previous output

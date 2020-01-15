@@ -12,7 +12,7 @@ import os
 
 chatbotPath = "/".join(settings.BASE_DIR.split('/')[:-1])
 sys.path.append(chatbotPath)
-from transformer.evaluate import Chatbot
+from transformer import evaluate
 # from chatbot import chatbot
 
 
@@ -43,8 +43,8 @@ class ChatbotManager(AppConfig):
         if not ChatbotManager.bot:
             logger.info('Initializing bot...')
 
-            ChatbotManager.bot = Chatbot()
-            ChatbotManager.bot.load_model(args)
+            ChatbotManager.bot = evaluate.Chatbot()
+            ChatbotManager.bot.load_model()
             #ChatbotManager.bot.main(['--modelTag', 'server', '--test', 'daemon', '--rootDir' , chatbotPath,'--datasetTag','res_joey'])
         else:
             logger.info('Bot already initialized.')

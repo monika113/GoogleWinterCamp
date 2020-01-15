@@ -157,10 +157,10 @@ if __name__ == "__main__":
         sentence = input('say something: ')
         topk = input('topk')
         topp = input('topp')
-        prediction = self.evaluate(sentence, top_k=int(topk), top_p=int(topp))
+        prediction = bot.evaluate(sentence, top_k=int(topk), top_p=int(topp))
 
-        predicted_sentence = self.tokenizer.decode(
-            [i for i in prediction if i < self.tokenizer.vocab_size])
+        predicted_sentence = bot.tokenizer.decode(
+            [i for i in prediction if i < bot.tokenizer.vocab_size])
 
         print('Input: {}'.format(sentence))
         print('Output: {}'.format(predicted_sentence))

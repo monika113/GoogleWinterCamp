@@ -13,6 +13,8 @@ import os
 chatbotPath = "/".join(settings.BASE_DIR.split('/')[:-1])
 sys.path.append(chatbotPath)
 from transformer import evaluate
+from emoji_prediction import inference
+import random
 # from chatbot import chatbot
 
 
@@ -26,6 +28,7 @@ class ChatbotManager(AppConfig):
     verbose_name = 'Chatbot Interface'
 
     bot = None
+    emoji_bot = None
 
     def ready(self):
         """ Called by Django only once during startup
@@ -45,9 +48,16 @@ class ChatbotManager(AppConfig):
 
             ChatbotManager.bot = evaluate.Chatbot()
             ChatbotManager.bot.load_model()
-            #ChatbotManager.bot.main(['--modelTag', 'server', '--test', 'daemon', '--rootDir' , chatbotPath,'--datasetTag','res_joey'])
         else:
             logger.info('Bot already initialized.')
+
+        if not ChatbotManager.emoji_bot:
+            logger.info('Initializing emoji...')
+
+            ChatbotManager.emoji_bot = inference.Emojibot()
+            ChatbotManager.emoji_bot.load_model()
+        else:
+            logger.info('Emoji Bot already initialized.')
 
     @staticmethod
     def callBot(sentence):
@@ -57,7 +67,7 @@ class ChatbotManager(AppConfig):
         Return:
             str: the answer
         """
-        if ChatbotManager.bot:
-            return ChatbotManager.bot.predict(sentence)
+        if ChatbotManager.bot and ChatbotManager.emoji_bot:
+            return ChatbotManager.bot.predict(sentence) + ChatbotManager.emoji_bot.predict(sentence)
         else:
             logger.error('Error: Bot not initialized!')

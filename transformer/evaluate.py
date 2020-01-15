@@ -50,7 +50,7 @@ class Chatbot:
             predictions = predictions[:, -1:, :]
 
 
-            logits = torch.tensor(tf.make_ndarray(predictions))
+            logits = torch.tensor(tf.make_ndarray(predictions.op.get_attr('value')))
 
             sorted_logits, sorted_indices = torch.sort(logits, descending=True)
             cumulative_probabilities = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)

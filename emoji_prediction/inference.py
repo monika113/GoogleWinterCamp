@@ -74,6 +74,22 @@ class Emojibot:
         self.LABEL = data.LabelField()
         self.model = None
         self.device = torch.device('cuda')
+        self.emoji_dict = {':face_with_tears_of_joy:': "\U0001F602", ':weary_face:': "\U0001F629",
+':purple_heart:': "\U0001F496", ':party_popper:': "\U0001F389", ':speaking_head:': "\U0001F5E3",
+':sparkles:': "\U00002728", ':loudly_crying_face:': "\U0001F62D",
+':smiling_face_with_heart-eyes:': "\U0001F60A", ':person_shrugging:': "\U0001F937",
+':fire:': "\U0001F525", ':person_facepalming:': "\U0001F926", ':red_heart:': "\U0001F496",
+':hundred_points:': "\U0001F4AF", ':raising_hands:': "\U0001F64B", ':trophy:': "\U0001F3C6",
+':beaming_face_with_smiling_eyes:': "\U0001F601", ':two_hearts:': "\U0001F495", ':heart_suit:': "\U0001F496",
+':skull:': "\U0001F480", ':thumbs_up:': "\U0001F44D", ':folded_hands:': "\U0001F64F", ':flexed_biceps:': "\U0001F4AA",
+':face_blowing_a_kiss:': "\U0001F618", ':smiling_face:': "\U0001F603", ':face_with_rolling_eyes:': "\U0001F644",
+':crying_face:': "\U0001F622", ':OK_hand:': "\U0001F44C", ':blue_heart:': "\U0001F496", ':winking_face:': "\U0001F609",
+':flushed_face:': "\U0001F633", ':clapping_hands:': "\U0001F44F", ':white_heavy_check_mark:': "\U00002705",
+':smiling_face_with_sunglasses:': "\U0001F60E", ':male_sign:': "\U00002642", ':double_exclamation_mark:': "\U0000203C",
+':smiling_face_with_smiling_eyes:': "\U0001F60A", ':thinking_face:': "\U0001F914",
+':police_car_light:': "\U0001F6A8", ':collision:': "\U0001F4A5",
+':rolling_on_the_floor_laughing:': "\U0001F923",  ':yellow_heart:': "\U0001F496", ':eyes:': "\U0001F440",
+':sparkling_heart:': "\U0001F496", ':glowing_star:': "\U0001F31F", ':female_sign:': "\U00002640", ':heavy_check_mark:':"\U00002705"}
 
     def load_model(self):
         cur_dir = os.path.abspath(os.path.dirname(__file__))
@@ -84,7 +100,7 @@ class Emojibot:
             csv_reader_params={'delimiter': '\t'},
             fields=[('text', self.TEXT), ('label', self.LABEL)])
 
-        print('train_data[0]', vars(train_data[0]))
+        # print('train_data[0]', vars(train_data[0]))
 
         self.TEXT.build_vocab(train_data, vectors='glove.42B.300d')
         self.LABEL.build_vocab(train_data)
@@ -119,4 +135,6 @@ class Emojibot:
         tensor = tensor.unsqueeze(1)
         preds = self.model(tensor)
         max_preds = preds.argmax(dim=1)
-        return self.LABEL.vocab.itos[max_preds.item()]
+        emoji_name = self.LABEL.vocab.itos[max_preds.item()]
+        emoji = self.emoji_dict[emoji_name]
+        return emoji

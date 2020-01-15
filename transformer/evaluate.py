@@ -54,10 +54,13 @@ class Chatbot:
             predictions = predictions[:, -1:, :]
 
 
-            logits = torch.tensor(tf.make_ndarray(predictions))
+            # logits = torch.tensor(tf.make_ndarray(predictions.op.get_attr('value')))
+            logits = torch.tensor(np.array(predictions)).squeeze(0).squeeze(0)
+            # print("logits size:", logits.size())
 
             sorted_logits, sorted_indices = torch.sort(logits, descending=True)
             cumulative_probabilities = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
+            # print("cumulative prob size:", cumulative_probabilities.size())
 
             # Remove tokens with cumulative probability above the threshold
             sorted_indices_to_remove = cumulative_probabilities > 0.9
@@ -67,12 +70,11 @@ class Chatbot:
 
             # Back to unsorted indices and set them to -infinity
             indices_to_remove = sorted_indices[sorted_indices_to_remove]
+            # print("indices to remove:", indices_to_remove.size())
             logits[indices_to_remove] = -float('Inf')
 
-            indices_to_remove = logits < -float('Inf')
-            logits[indices_to_remove] = -float('Inf')
             probabilities = F.softmax(logits, dim=-1)
-            predicted_id = torch.multinomial(probabilities, 1)
+            predicted_id = torch.multinomial(probabilities, 1).item()
 
 
             # # use top-p 
@@ -89,12 +91,14 @@ class Chatbot:
 
 
             # return the result if the predicted_id is equal to the end token
+            # print("type end_token[0]", type(END_TOKEN[0]))
             if tf.equal(predicted_id, END_TOKEN[0]):
                 break
 
             # concatenated the predicted_id to the output which is given to the decoder
             # as its input.
-            output = tf.concat([output, predicted_id], axis=-1)
+            # print("output size:", tf.shape(output))
+            output = tf.concat([output, np.array([[predicted_id]])], axis=-1)
 
         return tf.squeeze(output, axis=0)
 
@@ -111,8 +115,14 @@ class Chatbot:
 
         return predicted_sentence
 
-    def load_model(self, args):
-        self.tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(args.load_tokenizer_path)
+    def load_model(self, args = None):
+        if args:
+            load_tokenizer_path = args.load_tokenizer_path
+            pre_train_model_path = args.pre_train_model_path
+        else:
+            load_tokenizer_path = config.TOKENIZER_PATH
+            pre_train_model_path = config.MODEL_PATH
+        self.tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(load_tokenizer_path)
         VOCAB_SIZE = self.tokenizer.vocab_size + 2
         model = transformer(
             vocab_size=VOCAB_SIZE,
@@ -121,22 +131,7 @@ class Chatbot:
             d_model=config.D_MODEL,
             num_heads=config.NUM_HEADS,
             dropout=config.DROPOUT)
-        model.load_weights(args.pre_train_model_path)
-        self.bot = model
-        print('load model success')
-        return self.tokenizer, self.bot
-
-    def load_model(self):
-        self.tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(config.TOKENIZER_PATH)
-        VOCAB_SIZE = self.tokenizer.vocab_size + 2
-        model = transformer(
-            vocab_size=VOCAB_SIZE,
-            num_layers=config.NUM_LAYERS,
-            units=config.UNITS,
-            d_model=config.D_MODEL,
-            num_heads=config.NUM_HEADS,
-            dropout=config.DROPOUT)
-        model.load_weights(config.MODEL_PATH)
+        model.load_weights(pre_train_model_path)
         self.bot = model
         print('load model success')
         return self.tokenizer, self.bot

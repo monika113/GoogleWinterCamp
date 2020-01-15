@@ -383,7 +383,8 @@ def evaluate(model, device, test_list, multi_gpu, args):
             if args.gradient_accumulation > 1:
                 loss = loss / args.gradient_accumulation
                 accuracy = accuracy / args.gradient_accumulation
-            logger.info("evaluate batch {} ,loss {} ,accuracy {}".format(batch_idx, loss, accuracy))
+            if batch_idx % args.log_step == 0:
+                logger.info("evaluate batch {} ,loss {} ,accuracy {}".format(batch_idx, loss, accuracy))
             # tb_writer.add_scalar('loss', loss.item(), overall_step)
         logger.info("finishing evaluating")
 
@@ -408,6 +409,8 @@ def main():
 
     # 初始化tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+    special_tokens_dict = {'cls_token': '[CLS]', 'sep_token': '[SEP]', 'pad_token': '[PAD]'}
+    num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
     # tokenizer的字典大小
     vocab_size = len(tokenizer)
 

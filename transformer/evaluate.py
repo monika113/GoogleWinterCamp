@@ -144,7 +144,7 @@ if __name__ == "__main__":
     args = get_args()
     bot = Chatbot()
     bot.load_model(args)
-    sentence = input('first sentence:')
-    for _ in range(5):
+    while True:
+        sentence = input('say something: ')
         sentence = bot.predict(sentence)
         print('')

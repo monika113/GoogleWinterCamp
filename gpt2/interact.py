@@ -141,7 +141,7 @@ def main():
 
             for history_id, history_utr in enumerate(history[-args.max_history_len:]):
                 input_ids.extend(history_utr)
-                input_ids.extend(tokenizer.encode("[SEP]"))
+                input_ids.append(tokenizer.convert_tokens_to_ids('[SEP]'))
             curr_input_tensor = torch.tensor(input_ids).long().to(device)
             generated = []
             # 最多生成max_len个token

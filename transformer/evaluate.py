@@ -49,7 +49,7 @@ class Chatbot:
             # select the last word from the seq_len dimension
             predictions = predictions[:, -1:, :]
 
-            
+
             logits = torch.tensor(tf.make_ndarray(predictions))
 
             sorted_logits, sorted_indices = torch.sort(logits, descending=True)
@@ -67,7 +67,7 @@ class Chatbot:
 
             indices_to_remove = logits < -float('Inf')
             logits[indices_to_remove] = -float('Inf')
-            probs = F.softmax(logits, dim=-1)
+            probabilities = F.softmax(logits, dim=-1)
             predicted_id = torch.multinomial(probabilities, 1)
 
 

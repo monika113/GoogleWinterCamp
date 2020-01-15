@@ -117,6 +117,8 @@ def main():
     logger.info('using device:{}'.format(device))
     os.environ["CUDA_VISIBLE_DEVICES"] = args.device
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+    special_tokens_dict = {'cls_token': '[CLS]', 'sep_token': '[SEP]', 'pad_token': '[PAD]'}
+    num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
     model = GPT2LMHeadModel.from_pretrained(args.dialogue_model_path)
     model.to(device)
     model.eval()
@@ -134,12 +136,13 @@ def main():
             text = input("user:")
             if args.save_samples_path:
                 samples_file.write("user:{}\n".format(text))
-            history.append(tokenizer.encode(text))
+            # revise needed 更精细的处理
+            history.append(tokenizer.convert_tokens_to_ids(text.lower().split()))
             input_ids = [tokenizer.convert_tokens_to_ids('[CLS]')]  # 每个input以[CLS]为开头
 
             for history_id, history_utr in enumerate(history[-args.max_history_len:]):
                 input_ids.extend(history_utr)
-                input_ids.extend(tokenizer.encode("[SEP]"))
+                input_ids.append(tokenizer.convert_tokens_to_ids('[SEP]'))
             curr_input_tensor = torch.tensor(input_ids).long().to(device)
             generated = []
             # 最多生成max_len个token
@@ -165,7 +168,7 @@ def main():
             print(generated)
             text = tokenizer.convert_ids_to_tokens(generated)
             print(text)
-            print("chatbot:" + "".join(text))
+            print("chatbot:" + " ".join(text))
             if args.save_samples_path:
                 samples_file.write("chatbot:{}\n".format("".join(text)))
         except KeyboardInterrupt:

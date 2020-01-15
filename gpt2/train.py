@@ -35,6 +35,7 @@ def setup_train_args():
                         help='选择模型参数')
     parser.add_argument('--train_raw_path_ques', default='data/train.enc.pk', type=str, required=False, help='原始训练语料的问题')
     parser.add_argument('--train_raw_path_ans', default='data/train.dec.pk', type=str, required=False, help='原始训练语料的答案')
+    parser.add_argument('--train_raw_path', default='data/train.pk', type=str, required=False, help='原始训练语料')
     parser.add_argument('--train_tokenized_path', default='data/train_tokenized.txt', type=str,
                         required=False,
                         help='将原始训练语料tokenize之后的数据的存放位置')
@@ -174,10 +175,34 @@ def preprocess_que_ans_data(args, tokenizer, n_ctx):
     with open(args.train_tokenized_path, "w", encoding="utf-8") as f:
         for dialogue_index, (ques, ans) in enumerate(zip(data_ques, data_ans)):
             dialogue_ids = [tokenizer.convert_tokens_to_ids('[CLS]')]  # 每个dialogue以[CLS]开头
-            dialogue_ids.extend(tokenizer.encode(ques))
+            dialogue_ids.extend(tokenizer.convert_tokens_to_ids(ques.split()))
             dialogue_ids.append(tokenizer.convert_tokens_to_ids('[SEP]'))
-            dialogue_ids.extend(tokenizer.encode(ans))
+            dialogue_ids.extend(tokenizer.convert_tokens_to_ids(ans.split()))
             dialogue_ids.append(tokenizer.convert_tokens_to_ids('[SEP]'))
+            # 对超过n_ctx的长度进行截断,否则GPT2模型会报错
+            dialogue_ids = dialogue_ids[:n_ctx]
+            for dialogue_id in dialogue_ids:
+                f.write(str(dialogue_id) + ' ')
+            # 最后一条记录不添加换行符
+            if dialogue_index < len(data_ques) - 1:
+                f.write("\n")
+    logger.info("finish preprocessing raw data,the result is stored in {}".format(args.train_tokenized_path))
+
+def preprocess_pickle_data(args, tokenizer, n_ctx):
+    """
+    对原始语料进行处理，将原始语料转换为用于train的token id，对于每个dialogue，将其处于成如下形式"[CLS]utterance1[SEP]utterance2[SEP]utterance3[SEP]"
+    :param args:
+    :param tokenizer:
+    :param n_ctx:GPT2模型的上下文窗口大小,对于超过n_ctx(n_ctx包括了特殊字符)的dialogue进行截断
+    :return:
+    """
+    logger.info("tokenizing raw data,raw data path:{}, token output path:{}".format(args.train_raw_path,
+                                                                                    args.train_tokenized_path))
+    data = pickle.load(open(args.train_raw_path, 'rb'))
+    logger.info("there are {} dialogue in raw dataset".format(len(data)))
+    with open(args.train_tokenized_path, "w", encoding="utf-8") as f:
+        for dialogue_index, dialo in enumerate(data):
+            dialogue_ids = tokenizer.convert_tokens_to_ids(dialo.split())
             # 对超过n_ctx的长度进行截断,否则GPT2模型会报错
             dialogue_ids = dialogue_ids[:n_ctx]
             for dialogue_id in dialogue_ids:
@@ -383,7 +408,8 @@ def evaluate(model, device, test_list, multi_gpu, args):
             if args.gradient_accumulation > 1:
                 loss = loss / args.gradient_accumulation
                 accuracy = accuracy / args.gradient_accumulation
-            logger.info("evaluate batch {} ,loss {} ,accuracy {}".format(batch_idx, loss, accuracy))
+            if batch_idx % args.log_step == 0:
+                logger.info("evaluate batch {} ,loss {} ,accuracy {}".format(batch_idx, loss, accuracy))
             # tb_writer.add_scalar('loss', loss.item(), overall_step)
         logger.info("finishing evaluating")
 
@@ -408,6 +434,8 @@ def main():
 
     # 初始化tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+    special_tokens_dict = {'cls_token': '[CLS]', 'sep_token': '[SEP]', 'pad_token': '[PAD]'}
+    num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
     # tokenizer的字典大小
     vocab_size = len(tokenizer)
 
@@ -427,7 +455,12 @@ def main():
     if args.raw and args.train_mmi:  # 如果当前是要训练MMI模型
         preprocess_mmi_raw_data(args, tokenizer, n_ctx)
     elif args.raw and not args.train_mmi:  # 如果当前是要训练对话生成模型
-        preprocess_que_ans_data(args, tokenizer, n_ctx)
+        # 如果是从一个文件里直接读入
+        if args.train_raw_path:
+            preprocess_pickle_data(args, tokenizer, n_ctx)
+        # 如果是从两个文件里读入再拼接起来
+        else:
+            preprocess_que_ans_data(args, tokenizer, n_ctx)
     # 是否使用多块GPU进行并行运算
     multi_gpu = False
     if args.cuda and torch.cuda.device_count() > 1:
@@ -450,7 +483,7 @@ def main():
         with open(args.train_tokenized_path, "r", encoding="utf8") as f:
             data = f.read()
     data_list = data.split("\n")
-    train_list, test_list = train_test_split(data_list, test_size=0.2, random_state=1)
+    train_list, test_list = train_test_split(data_list, test_size=0.1, random_state=1)
     # 开始训练
     train(model, device, train_list, multi_gpu, args)
     # 测试模型

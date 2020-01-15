@@ -6,8 +6,13 @@ import torch.optim as optim
 from torchtext import data
 import spacy
 import os
+cur_dir = os.path.abspath(os.path.dirname(__file__))
+import sys
+sys.path.append(cur_dir)
 import pickle
+import nltk
 from nltk import word_tokenize
+nltk.download('punkt')
 
 SEED = 1234
 torch.manual_seed(SEED)
@@ -63,58 +68,55 @@ class AttentionLSTM(nn.Module):
         return self.fc(new_embed)
 
 
-TEXT = data.Field(tokenize=word_tokenize)
-LABEL = data.LabelField()
+class Emojibot:
+    def __init__(self):
+        self.TEXT = data.Field(tokenize=word_tokenize)
+        self.LABEL = data.LabelField()
+        self.model = None
+        self.device = torch.device('cuda')
 
-train_data, valid_data = data.TabularDataset.splits(
-path='data', train='train_c.csv',
-validation='dev_c.csv',
-format='csv', skip_header=True,
-csv_reader_params={'delimiter':'\t'},
-fields=[('text',TEXT),('label',LABEL)])
+    def load_model(self):
+        cur_dir = os.path.abspath(os.path.dirname(__file__))
+        train_data, valid_data = data.TabularDataset.splits(
+            path=cur_dir + '/data', train='train_c.csv',
+            validation='dev_c.csv',
+            format='csv', skip_header=True,
+            csv_reader_params={'delimiter': '\t'},
+            fields=[('text', self.TEXT), ('label', self.LABEL)])
 
+        print('train_data[0]', vars(train_data[0]))
 
-print('train_data[0]', vars(train_data[0]))
+        self.TEXT.build_vocab(train_data, vectors='glove.42B.300d')
+        self.LABEL.build_vocab(train_data)
 
-TEXT.build_vocab(train_data, vectors='glove.42B.300d')
-LABEL.build_vocab(train_data)
+        print(self.LABEL.vocab.stoi)
 
-print(LABEL.vocab.stoi)
+        BATCH_SIZE = 30
+        INPUT_DIM = len(self.TEXT.vocab)
+        EMBEDDING_DIM = 300
+        HIDDEN_DIM = 256
+        OUTPUT_DIM = len(self.LABEL.vocab)
+        N_LAYERS = 2
+        BIDIRECTIONAL = True
+        DROPOUT = 0.5
 
-device = torch.device('cuda')
-BATCH_SIZE = 30
-INPUT_DIM = len(TEXT.vocab)
-EMBEDDING_DIM = 300
-HIDDEN_DIM = 256
-OUTPUT_DIM = len(LABEL.vocab)
-N_LAYERS = 2
-BIDIRECTIONAL = True
-DROPOUT = 0.5
+        self.model = AttentionLSTM(INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, OUTPUT_DIM, N_LAYERS, BIDIRECTIONAL, DROPOUT)
+        pretrained_embeddings = self.TEXT.vocab.vectors
+        self.model.embedding.weight.data.copy_(pretrained_embeddings)
 
-model = AttentionLSTM(INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, OUTPUT_DIM, N_LAYERS, BIDIRECTIONAL, DROPOUT)
-pretrained_embeddings = TEXT.vocab.vectors
-model.embedding.weight.data.copy_(pretrained_embeddings)
+        self.model = self.model.to(self.device)
 
-train_iterator, valid_iterator = data.BucketIterator.splits(
-    (train_data, valid_data),
-    batch_size=BATCH_SIZE,
-    sort_key=lambda x: len(x.text),
-    device=device
-)
+        SAVE_DIR = cur_dir + '/models'
+        MODEL_SAVE_PATH = os.path.join(SAVE_DIR, 'emoji_classification_model.pt')
 
-model = model.to(device)
- 
-SAVE_DIR = 'models'
-MODEL_SAVE_PATH = os.path.join(SAVE_DIR, 'emoji_classification_model.pt')
+        self.model.load_state_dict(torch.load(MODEL_SAVE_PATH))
+        self.model.eval()
 
-model.load_state_dict(torch.load(MODEL_SAVE_PATH))
-model.eval()
-
-def predict_class(sentence):
-    tokenized = word_tokenize(sentence.lower())
-    indexed = [TEXT.vocab.stoi[t] for t in tokenized]
-    tensor = torch.LongTensor(indexed).to(device)
-    tensor = tensor.unsqueeze(1)
-    preds = model(tensor)
-    max_preds = preds.argmax(dim=1)
-    return LABEL.vocab.itos[max_preds.item()]
+    def predict_class(self, sentence):
+        tokenized = word_tokenize(sentence.lower())
+        indexed = [self.TEXT.vocab.stoi[t] for t in tokenized]
+        tensor = torch.LongTensor(indexed).to(self.device)
+        tensor = tensor.unsqueeze(1)
+        preds = self.model(tensor)
+        max_preds = preds.argmax(dim=1)
+        return self.LABEL.vocab.itos[max_preds.item()]

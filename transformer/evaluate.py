@@ -51,6 +51,8 @@ class Chatbot:
             cumulative_probs = tf.cumsum(tf.nn.softmax(sorted_logits, axis=-1), axis=-1, exclusive=True)
             sorted_indices_to_remove = cumulative_probs > 0.9
             indices_to_remove = sorted_indices[sorted_indices_to_remove]
+            with tf.Session() as sess:
+                indices_to_remove = sess.run(indices_to_remove)
             predictions[indices_to_remove] = -float('Inf')
             probabilities = tf.nn.softmax(predictions, axis=-1)
             sampled = tf.random.categorical(probabilities, 1)

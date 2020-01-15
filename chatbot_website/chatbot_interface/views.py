@@ -5,4 +5,8 @@ def mainView(request):
     Args:
         request (Obj): django request object
     """
+    return render(request, 'main.html', {})
+    # return render(request, 'index.html', {})
+
+def detail(request):
     return render(request, 'index.html', {})

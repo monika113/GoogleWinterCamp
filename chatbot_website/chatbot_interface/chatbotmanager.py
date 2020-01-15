@@ -53,7 +53,6 @@ class ChatbotManager(AppConfig):
 
         if not ChatbotManager.emoji_bot:
             logger.info('Initializing emoji...')
-
             ChatbotManager.emoji_bot = inference.Emojibot()
             ChatbotManager.emoji_bot.load_model()
         else:

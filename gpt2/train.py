@@ -33,7 +33,6 @@ def setup_train_args():
     parser.add_argument('--device', default='0', type=str, required=False, help='设置使用哪些显卡')
     parser.add_argument('--model_config', default='config/model_config_dialogue_small.json', type=str, required=False,
                         help='选择模型参数')
-    parser.add_argument('--vocab_path', default='vocabulary/vocab_small.txt', type=str, required=False, help='选择词库')
     parser.add_argument('--train_raw_path_ques', default='data/train.enc.pk', type=str, required=False, help='原始训练语料的问题')
     parser.add_argument('--train_raw_path_ans', default='data/train.dec.pk', type=str, required=False, help='原始训练语料的答案')
     parser.add_argument('--train_tokenized_path', default='data/train_tokenized.txt', type=str,

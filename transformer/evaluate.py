@@ -15,18 +15,18 @@ class Chatbot:
         self.bot = None
         self.tokenizer = None
 
-    def evaluate(self, sentence, tokenizer, model):
+    def evaluate(self, sentence):
         # sentence = model.preprocess_sentence(sentence)
 
         # tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(config.TOKENIZER_PATH)
-        START_TOKEN, END_TOKEN = [tokenizer.vocab_size], [tokenizer.vocab_size + 1]
+        START_TOKEN, END_TOKEN = [self.tokenizer.vocab_size], [self.tokenizer.vocab_size + 1]
         sentence = tf.expand_dims(
-            START_TOKEN + tokenizer.encode(sentence) + END_TOKEN, axis=0)
+            START_TOKEN + self.tokenizer.encode(sentence) + END_TOKEN, axis=0)
 
         output = tf.expand_dims(START_TOKEN, 0)
 
         for i in range(config.MAX_LENGTH):
-            predictions = model(inputs=[sentence, output], training=False)
+            predictions = self.bot(inputs=[sentence, output], training=False)
 
             # select the last word from the seq_len dimension
             predictions = predictions[:, -1:, :]
@@ -53,8 +53,8 @@ class Chatbot:
 
         return predicted_sentence
 
-    def load_model(self):
-        self.tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(config.EVA_TOKENIZER_PATH)
+    def load_model(self, args):
+        self.tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(args.load_tokenizer_path)
         VOCAB_SIZE = self.tokenizer.vocab_size + 2
         model = transformer(
             vocab_size=VOCAB_SIZE,
@@ -63,7 +63,7 @@ class Chatbot:
             d_model=config.D_MODEL,
             num_heads=config.NUM_HEADS,
             dropout=config.DROPOUT)
-        model.load_weights(config.EVA_MODEL_PATH)
+        model.load_weights(args.pre_train_model_path)
         self.bot = model
         print('load model success')
         return self.tokenizer, self.bot
@@ -72,9 +72,9 @@ class Chatbot:
 if __name__ == "__main__":
     # feed the model with its previous output
     args = get_args()
-    tokenizer, model = load_model(args)
-
-    sentence = 'I am not crazy, my mother had me tested.'
+    bot = Chatbot()
+    bot.load_model(args)
+    sentence = 'hello. How are you?'
     for _ in range(5):
-        sentence = predict(sentence)
+        sentence = bot.predict(sentence)
         print('')

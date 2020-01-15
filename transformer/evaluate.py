@@ -97,7 +97,8 @@ class Chatbot:
 
             # concatenated the predicted_id to the output which is given to the decoder
             # as its input.
-            output = tf.concat([output, predicted_id], axis=-1)
+            print("output size:", tf.shape(output))
+            output = tf.concat([output, np.array([[predicted_id]])], axis=-1)
 
         return tf.squeeze(output, axis=0)
 

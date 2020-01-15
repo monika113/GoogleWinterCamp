@@ -11,7 +11,7 @@ from tqdm import tqdm
 from torch.nn import DataParallel
 import logging
 from transformers.modeling_gpt2 import GPT2Config, GPT2LMHeadModel
-from transformers import BertTokenizer
+from transformers import GPT2Tokenizer
 from os.path import join, exists
 from itertools import zip_longest, chain
 # from chatbot.model import DialogueGPT2Model
@@ -38,7 +38,6 @@ def set_interact_args():
     parser.add_argument('--model_config', default='config/model_config_dialogue_small.json', type=str, required=False,
                         help='模型参数')
     parser.add_argument('--log_path', default='data/interacting.log', type=str, required=False, help='interact日志存放位置')
-    parser.add_argument('--voca_path', default='vocabulary/vocab_small.txt', type=str, required=False, help='选择词库')
     parser.add_argument('--dialogue_model_path', default='dialogue_model_path/', type=str, required=False, help='对话模型路径')
     parser.add_argument('--save_samples_path', default="sample/", type=str, required=False, help="保存聊天记录的文件路径")
     parser.add_argument('--repetition_penalty', default=1.0, type=float, required=False,
@@ -117,7 +116,9 @@ def main():
     device = 'cuda' if args.cuda else 'cpu'
     logger.info('using device:{}'.format(device))
     os.environ["CUDA_VISIBLE_DEVICES"] = args.device
-    tokenizer = BertTokenizer(vocab_file=args.voca_path)
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+    special_tokens_dict = {'cls_token': '[CLS]', 'sep_token': '[SEP]', 'pad_token': '[PAD]'}
+    num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
     model = GPT2LMHeadModel.from_pretrained(args.dialogue_model_path)
     model.to(device)
     model.eval()
@@ -135,12 +136,13 @@ def main():
             text = input("user:")
             if args.save_samples_path:
                 samples_file.write("user:{}\n".format(text))
-            history.append(tokenizer.encode(text))
-            input_ids = [tokenizer.cls_token_id]  # 每个input以[CLS]为开头
+            # revise needed 更精细的处理
+            history.append(tokenizer.convert_tokens_to_ids(text.lower().split()))
+            input_ids = [tokenizer.convert_tokens_to_ids('[CLS]')]  # 每个input以[CLS]为开头
 
             for history_id, history_utr in enumerate(history[-args.max_history_len:]):
                 input_ids.extend(history_utr)
-                input_ids.append(tokenizer.sep_token_id)
+                input_ids.append(tokenizer.convert_tokens_to_ids('[SEP]'))
             curr_input_tensor = torch.tensor(input_ids).long().to(device)
             generated = []
             # 最多生成max_len个token
@@ -156,14 +158,16 @@ def main():
                 filtered_logits = top_k_top_p_filtering(next_token_logits, top_k=args.topk, top_p=args.topp)
                 # torch.multinomial表示从候选集合中无放回地进行抽取num_samples个元素，权重越高，抽到的几率越高，返回元素的下标
                 next_token = torch.multinomial(F.softmax(filtered_logits, dim=-1), num_samples=1)
-                if next_token == tokenizer.sep_token_id:  # 遇到[SEP]则表明response生成结束
+                if next_token == tokenizer.convert_tokens_to_ids('[SEP]'):  # 遇到[SEP]则表明response生成结束
                     break
                 generated.append(next_token.item())
                 curr_input_tensor = torch.cat((curr_input_tensor, next_token), dim=0)
                 # his_text = tokenizer.convert_ids_to_tokens(curr_input_tensor.tolist())
                 # print("his_text:{}".format(his_text))
             history.append(generated)
+            print(generated)
             text = tokenizer.convert_ids_to_tokens(generated)
+            print(text)
             print("chatbot:" + "".join(text))
             if args.save_samples_path:
                 samples_file.write("chatbot:{}\n".format("".join(text)))

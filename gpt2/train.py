@@ -173,11 +173,11 @@ def preprocess_que_ans_data(args, tokenizer, n_ctx):
     logger.info("there are {} dialogue in raw dataset".format(len(data_ques)))
     with open(args.train_tokenized_path, "w", encoding="utf-8") as f:
         for dialogue_index, (ques, ans) in enumerate(zip(data_ques, data_ans)):
-            dialogue_ids = [tokenizer.cls_token_id]  # 每个dialogue以[CLS]开头
-            dialogue_ids.extend(tokenizer.encode(ques))
-            dialogue_ids.append(tokenizer.sep_token_id)  # 每个utterance之后添加[SEP]，表示utterance结束
-            dialogue_ids.extend(tokenizer.encode(ans))
-            dialogue_ids.append(tokenizer.sep_token_id)  # 每个utterance之后添加[SEP]，表示utterance结束
+            dialogue_ids = [tokenizer.convert_tokens_to_ids('[CLS]')]  # 每个dialogue以[CLS]开头
+            dialogue_ids.extend(tokenizer.convert_tokens_to_ids(ques.split()))
+            dialogue_ids.append(tokenizer.convert_tokens_to_ids('[SEP]'))
+            dialogue_ids.extend(tokenizer.convert_tokens_to_ids(ans.split()))
+            dialogue_ids.append(tokenizer.convert_tokens_to_ids('[SEP]'))
             # 对超过n_ctx的长度进行截断,否则GPT2模型会报错
             dialogue_ids = dialogue_ids[:n_ctx]
             for dialogue_id in dialogue_ids:
@@ -290,7 +290,7 @@ def train(model, device, train_list, multi_gpu, args):
 
     # 设置优化器，并且在初始训练时，使用warmup策略
     optimizer = transformers.AdamW(model.parameters(), lr=args.lr, correct_bias=True)
-    scheduler = transformers.WarmupLinearSchedule(optimizer, warmup_steps=args.warmup_steps, t_total=total_steps)
+    scheduler = transformers.get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps, num_training_steps=total_steps)
 
     logger.info('starting training')
     # 用于统计每次梯度累计的loss
@@ -373,7 +373,7 @@ def evaluate(model, device, test_list, multi_gpu, args):
                                  collate_fn=collate_fn)
     with torch.no_grad():
         for batch_idx, input_ids in enumerate(test_dataloader):
-            input_ids.to(device)
+            input_ids = input_ids.to(device)
             outputs = model.forward(input_ids=input_ids)
             loss, accuracy = calculate_loss_and_accuracy(outputs, labels=input_ids, device=device)
 
@@ -383,7 +383,8 @@ def evaluate(model, device, test_list, multi_gpu, args):
             if args.gradient_accumulation > 1:
                 loss = loss / args.gradient_accumulation
                 accuracy = accuracy / args.gradient_accumulation
-            logger.info("evaluate batch {} ,loss {} ,accuracy {}".format(batch_idx, loss, accuracy))
+            if batch_idx % args.log_step == 0:
+                logger.info("evaluate batch {} ,loss {} ,accuracy {}".format(batch_idx, loss, accuracy))
             # tb_writer.add_scalar('loss', loss.item(), overall_step)
         logger.info("finishing evaluating")
 
@@ -408,6 +409,8 @@ def main():
 
     # 初始化tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+    special_tokens_dict = {'cls_token': '[CLS]', 'sep_token': '[SEP]', 'pad_token': '[PAD]'}
+    num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
     # tokenizer的字典大小
     vocab_size = len(tokenizer)
 
@@ -429,8 +432,6 @@ def main():
     elif args.raw and not args.train_mmi:  # 如果当前是要训练对话生成模型
         preprocess_que_ans_data(args, tokenizer, n_ctx)
     # 是否使用多块GPU进行并行运算
-    exit()
-
     multi_gpu = False
     if args.cuda and torch.cuda.device_count() > 1:
         logger.info("Let's use GPUs to train")

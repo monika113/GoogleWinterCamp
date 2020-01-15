@@ -85,7 +85,7 @@
 	body {
 		height: 100%;
 		background-color: #414f57;
-		background-image: url("images/overlay.png"), url("../../images/bg.jpg");
+		background-image: url("images/overlay.png"), url("../../images/bg1.jpeg");
 
 		background-repeat: repeat,			no-repeat,			no-repeat;
 		background-size: 100px 100px, cover,				cover;
@@ -124,13 +124,12 @@
 /* Type */
 
 	body, input, select, textarea {
-		color: #414f57;
+		color: #000000;
 		font-family: "Source Sans Pro", Helvetica, sans-serif;
-		font-size: 14pt;
+		font-size: 20pt;
 		font-weight: 300;
 		line-height: 2;
 		letter-spacing: 0.2em;
-		text-transform: uppercase;
 	}
 
 		@media screen and (max-width: 1680px) {

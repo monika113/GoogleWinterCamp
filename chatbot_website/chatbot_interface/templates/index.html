@@ -89,7 +89,8 @@
 
 				$('#message').bind("enterKey",function(e){
 					console.log("Sdf");
-					$('#chat_zone').animate({scrollTop: $('#chat_zone').prop("scrollHeight")}, 100);
+					$('#chat_zone').animate({scrollTop: $('#chat_zone').prop("scrollHeight")+100}, 100);
+<!--					$('#chat_zone').scrollTop($('#chat_zone')[0].ScrollHeight);-->
 
 				});
 			</script>

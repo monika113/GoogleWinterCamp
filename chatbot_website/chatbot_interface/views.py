@@ -10,3 +10,7 @@ def mainView(request):
 
 def detail(request):
     return render(request, 'index.html', {})
+
+def marge(request):
+    return render(request, 'marge.html', {})
+

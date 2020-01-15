@@ -42,8 +42,10 @@ def ws_receive(message):
     """
     # Get client info
     clientName = message.channel_session['room']
+    print("clientname", clientName, "!!!!!!!")
     data = json.loads(message['text'])
-
+    print("data", data)
+    print("message", message, "!!!!!!!!!!!!!!!!")
     # Compute the prediction
     question = data['message']
     try:
@@ -55,8 +57,8 @@ def ws_receive(message):
 
     # Check eventual error
     if not answer:
-        # answer = 'Error: Try a shorter sentence orangleliu<span class="emoji emoji1f4d6"></span>'
-        answer = u'\U0001F60D'+'test'
+        answer = 'Error: Try a shorter sentence'
+        # answer = u'\U0001F60D'+'test'
     logger.info('{}: {} -> {}'.format(clientName, question, answer))
 
     # Send the prediction back

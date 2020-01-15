@@ -162,7 +162,9 @@ def main():
                 # his_text = tokenizer.convert_ids_to_tokens(curr_input_tensor.tolist())
                 # print("his_text:{}".format(his_text))
             history.append(generated)
+            print(generated)
             text = tokenizer.convert_ids_to_tokens(generated)
+            print(text)
             print("chatbot:" + "".join(text))
             if args.save_samples_path:
                 samples_file.write("chatbot:{}\n".format("".join(text)))

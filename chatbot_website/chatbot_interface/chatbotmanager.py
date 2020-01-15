@@ -5,6 +5,7 @@ import sys
 from django.apps import AppConfig
 import sys
 import os
+import numpy as np
 
 #data_folder = Path("source_data/text_files/")
 
@@ -67,6 +68,12 @@ class ChatbotManager(AppConfig):
             str: the answer
         """
         if ChatbotManager.bot and ChatbotManager.emoji_bot:
-            return ChatbotManager.bot.predict(sentence) + ChatbotManager.emoji_bot.predict(sentence)
+            p = np.random.rand()
+            if p < 0.2:
+                return ChatbotManager.bot.predict(sentence) + ChatbotManager.emoji_bot.predict_class(sentence)
+            elif p > 0.8:
+                return ChatbotManager.emoji_bot.predict_class(sentence) + ChatbotManager.bot.predict(sentence)
+            else:
+                return ChatbotManager.bot.predict(sentence)
         else:
             logger.error('Error: Bot not initialized!')

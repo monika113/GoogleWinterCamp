@@ -132,7 +132,7 @@ def train():
     parser.add_argument("--personality_permutations", type=int, default=1, help="Number of permutations of personality sentences")
     parser.add_argument("--eval_before_start", action='store_true', help="If true start with a first evaluation before training")
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu", help="Device (cuda or cpu)")
-     parser.add_argument("--local_rank", type=int, default=-1, help="Local rank for distributed training (-1: not distributed)")
+    parser.add_argument("--local_rank", type=int, default=-1, help="Local rank for distributed training (-1: not distributed)")
     args = parser.parse_args()
 
     # logging is set to INFO (resp. WARN) for main (resp. auxiliary) process. logger.info => log main process only, logger.warning => log all processes

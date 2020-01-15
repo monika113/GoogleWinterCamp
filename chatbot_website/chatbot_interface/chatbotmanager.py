@@ -11,10 +11,7 @@ import os
 #file_to_open = data_folder / "raw_data.txt"
 
 chatbotPath = "/".join(settings.BASE_DIR.split('/')[:-1])
-print("chat_path", chatbotPath)
-new_path = chatbotPath + '/transformer/'
 sys.path.append(chatbotPath)
-sys.path.append(new_path)
 from transformer import evaluate
 # from chatbot import chatbot
 

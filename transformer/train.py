@@ -40,11 +40,11 @@ def train(inputs, outputs, args):
 
 if __name__ == "__main__":
     # 读入
-    questions_infile = open(config.INPUT_PATH, 'rb')
-    answers_infile = open(config.OUTPUT_PATH, 'rb')
+    args = get_args()
+    questions_infile = open(args.input_path, 'rb')
+    answers_infile = open(args.output_path, 'rb')
     questions = pickle.load(questions_infile)
     answers = pickle.load(answers_infile)
-    print('load data success!')
-    args = get_args()
+    print('load data success, from ' + args.inputpath)
     train(questions, answers, args)
 

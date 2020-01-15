@@ -102,7 +102,6 @@ class Chatbot:
 
         return tf.squeeze(output, axis=0)
 
-        return tf.squeeze(output, axis=0)
 
     def predict(self, sentence):
         prediction = self.evaluate(sentence)
@@ -122,7 +121,9 @@ class Chatbot:
         else:
             load_tokenizer_path = config.TOKENIZER_PATH
             pre_train_model_path = config.MODEL_PATH
-        self.tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(load_tokenizer_path)
+        cur_dir = os.path.abspath(os.path.dirname(__file__))
+        load_tokenizer_path_new = cur_dir + '/' + load_tokenizer_path
+        self.tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(load_tokenizer_path_new)
         VOCAB_SIZE = self.tokenizer.vocab_size + 2
         model = transformer(
             vocab_size=VOCAB_SIZE,
@@ -131,7 +132,8 @@ class Chatbot:
             d_model=config.D_MODEL,
             num_heads=config.NUM_HEADS,
             dropout=config.DROPOUT)
-        model.load_weights(pre_train_model_path)
+        pre_train_model_path_new = cur_dir + '/' +pre_train_model_path
+        model.load_weights(pre_train_model_path_new)
         self.bot = model
         print('load model success')
         return self.tokenizer, self.bot

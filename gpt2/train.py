@@ -174,6 +174,7 @@ def preprocess_que_ans_data(args, tokenizer, n_ctx):
     with open(args.train_tokenized_path, "w", encoding="utf-8") as f:
         for dialogue_index, (ques, ans) in enumerate(zip(data_ques, data_ans)):
             dialogue_ids = [tokenizer.convert_tokens_to_ids('[CLS]')]  # 每个dialogue以[CLS]开头
+            print(ques.split())
             print(tokenizer.tokenize(ques))
             exit()
             dialogue_ids.extend(tokenizer.encode(ques))

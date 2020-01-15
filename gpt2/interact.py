@@ -129,7 +129,7 @@ def main():
         samples_file.write("聊天记录{}:\n".format(datetime.now()))
         # 存储聊天记录，每个utterance以token的id的形式进行存储
     history = []
-    print('开始和chatbot聊天，输入CTRL + Z以退出')
+    print('开始和chatbot聊天，输入CTRL + C以退出')
 
     while True:
         try:

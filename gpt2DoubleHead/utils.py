@@ -19,7 +19,7 @@ from pytorch_transformers import (AdamW, OpenAIGPTDoubleHeadsModel, OpenAIGPTTok
 
 PERSONACHAT_URL = "https://s3.amazonaws.com/datasets.huggingface.co/personachat/personachat_self_original.json"
 HF_FINETUNED_MODEL = "https://s3.amazonaws.com/models.huggingface.co/transfer-learning-chatbot/gpt_personachat_cache.tar.gz"
-
+personality = ["I have two children.", "I am a good father."]
 logger = logging.getLogger(__file__)
 
 def download_pretrained_model():
@@ -68,6 +68,8 @@ def get_dataset_new(tokenizer, dataset_path, dataset_cache):
         logger.info("Download dataset from %s", dataset_path)
         data_path = open(dataset_path, 'rb')
         data = pickle.load(data_path)
+        for dialog in data:
+            dialog['personality'] = personality.copy()
         train_data = random.choices(data, k = int(len(data)*0.7))
         valid_data = random.choices(data, k = int(len(data)*0.3))
         dataset = {}

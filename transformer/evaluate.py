@@ -25,12 +25,37 @@ class Chatbot:
 
         output = tf.expand_dims(START_TOKEN, 0)
 
+        # for i in range(config.MAX_LENGTH):
+        #     predictions = self.bot(inputs=[sentence, output], training=False)
+
+        #     # select the last word from the seq_len dimension
+        #     predictions = predictions[:, -1:, :]
+        #     predicted_id = tf.cast(tf.argmax(predictions, axis=-1), tf.int32)
+
+        #     # return the result if the predicted_id is equal to the end token
+        #     if tf.equal(predicted_id, END_TOKEN[0]):
+        #         break
+
+        #     # concatenated the predicted_id to the output which is given to the decoder
+        #     # as its input.
+        #     output = tf.concat([output, predicted_id], axis=-1)
         for i in range(config.MAX_LENGTH):
             predictions = self.bot(inputs=[sentence, output], training=False)
 
             # select the last word from the seq_len dimension
             predictions = predictions[:, -1:, :]
-            predicted_id = tf.cast(tf.argmax(predictions, axis=-1), tf.int32)
+
+            # use top-p 
+            sorted_logits = tf.sort(predictions, direction='DESCENDING')
+            sorted_indices = tf.argsort(predictions, direction='DESCENDING')
+            cumulative_probs = tf.cumsum(tf.nn.softmax(sorted_logits, dim=-1), axis=-1, exclusive=True)
+            sorted_indices_to_remove = cumulative_probs > 0.9
+            indices_to_remove = sorted_indices[sorted_indices_to_remove]
+            predictions[indices_to_remove] = -float('Inf')
+            probabilities = tf.nn.softmax(predictions, axis=-1)
+            sampled = tf.random.categorical(probabilities, 1)
+            predicted_id = tf.cast(tf.argmax(sampled, axis=-1), tf.int32)
+
 
             # return the result if the predicted_id is equal to the end token
             if tf.equal(predicted_id, END_TOKEN[0]):
@@ -39,6 +64,8 @@ class Chatbot:
             # concatenated the predicted_id to the output which is given to the decoder
             # as its input.
             output = tf.concat([output, predicted_id], axis=-1)
+
+        return tf.squeeze(output, axis=0)
 
         return tf.squeeze(output, axis=0)
 

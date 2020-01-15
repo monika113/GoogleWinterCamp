@@ -7,3 +7,4 @@ ParlAI/
 __pycache__
 .env/
 .DS_Store
+emoji_prediction/models/emoji_classification_model.pt

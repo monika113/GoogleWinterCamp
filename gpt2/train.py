@@ -35,7 +35,7 @@ def setup_train_args():
                         help='选择模型参数')
     parser.add_argument('--train_raw_path_ques', default='data/train.enc.pk', type=str, required=False, help='原始训练语料的问题')
     parser.add_argument('--train_raw_path_ans', default='data/train.dec.pk', type=str, required=False, help='原始训练语料的答案')
-    parser.add_argument('--train_raw_path', default='data/train.pk', type=str, required=False, help='原始训练语料')
+    parser.add_argument('--train_raw_path', default='', type=str, required=False, help='原始训练语料')
     parser.add_argument('--train_tokenized_path', default='data/train_tokenized.txt', type=str,
                         required=False,
                         help='将原始训练语料tokenize之后的数据的存放位置')
@@ -456,7 +456,7 @@ def main():
         preprocess_mmi_raw_data(args, tokenizer, n_ctx)
     elif args.raw and not args.train_mmi:  # 如果当前是要训练对话生成模型
         # 如果是从一个文件里直接读入
-        if args.train_raw_path:
+        if len(args.train_raw_path) != 0:
             preprocess_pickle_data(args, tokenizer, n_ctx)
         # 如果是从两个文件里读入再拼接起来
         else:

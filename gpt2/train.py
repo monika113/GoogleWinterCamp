@@ -455,7 +455,7 @@ def main():
     if args.raw and args.train_mmi:  # 如果当前是要训练MMI模型
         preprocess_mmi_raw_data(args, tokenizer, n_ctx)
     elif args.raw and not args.train_mmi:  # 如果当前是要训练对话生成模型
-        # 如果是从一个文件里直接读入
+        # 如果是从一个文件里直接读入数据
         if len(args.train_raw_path) != 0:
             preprocess_pickle_data(args, tokenizer, n_ctx)
         # 如果是从两个文件里读入再拼接起来

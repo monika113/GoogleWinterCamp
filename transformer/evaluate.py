@@ -9,6 +9,10 @@ import re
 import numpy as np
 import pickle
 
+import os
+cur_dir = os.path.abspath(os.path.dirname(__file__))
+import sys
+sys.path.append(cur_dir)
 import config
 from util import get_dataset, get_args
 from model import transformer, CustomSchedule, loss_function, accuracy
@@ -107,8 +111,14 @@ class Chatbot:
 
         return predicted_sentence
 
-    def load_model(self, args):
-        self.tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(args.load_tokenizer_path)
+    def load_model(self, args = None):
+        if args:
+            load_tokenizer_path = args.load_tokenizer_path
+            pre_train_model_path = args.pre_train_model_path
+        else:
+            load_tokenizer_path = config.TOKENIZER_PATH
+            pre_train_model_path = config.MODEL_PATH
+        self.tokenizer = tfds.features.text.SubwordTextEncoder.load_from_file(load_tokenizer_path)
         VOCAB_SIZE = self.tokenizer.vocab_size + 2
         model = transformer(
             vocab_size=VOCAB_SIZE,
@@ -117,7 +127,7 @@ class Chatbot:
             d_model=config.D_MODEL,
             num_heads=config.NUM_HEADS,
             dropout=config.DROPOUT)
-        model.load_weights(args.pre_train_model_path)
+        model.load_weights(pre_train_model_path)
         self.bot = model
         print('load model success')
         return self.tokenizer, self.bot

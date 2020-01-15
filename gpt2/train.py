@@ -11,13 +11,14 @@ from tqdm import tqdm
 from torch.nn import DataParallel
 import logging
 from transformers.modeling_gpt2 import GPT2Config, GPT2LMHeadModel
-from transformers import BertTokenizer
+from transformers import GPT2Tokenizer
 from os.path import join, exists
 from itertools import zip_longest, chain
 from dataset import MyDataset
 from torch.utils.data import Dataset, DataLoader
 from torch.nn import CrossEntropyLoss
 from sklearn.model_selection import train_test_split
+import pickle
 
 PAD = '[PAD]'
 pad_id = 0
@@ -30,11 +31,11 @@ def setup_train_args():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('--device', default='0', type=str, required=False, help='设置使用哪些显卡')
-    parser.add_argument('--no_cuda', action='store_true', help='不使用GPU进行训练')
     parser.add_argument('--model_config', default='config/model_config_dialogue_small.json', type=str, required=False,
                         help='选择模型参数')
     parser.add_argument('--vocab_path', default='vocabulary/vocab_small.txt', type=str, required=False, help='选择词库')
-    parser.add_argument('--train_raw_path', default='data/train.txt', type=str, required=False, help='原始训练语料')
+    parser.add_argument('--train_raw_path_ques', default='data/train.enc.pk', type=str, required=False, help='原始训练语料的问题')
+    parser.add_argument('--train_raw_path_ans', default='data/train.dec.pk', type=str, required=False, help='原始训练语料的答案')
     parser.add_argument('--train_tokenized_path', default='data/train_tokenized.txt', type=str,
                         required=False,
                         help='将原始训练语料tokenize之后的数据的存放位置')
@@ -114,6 +115,7 @@ def create_model(args, vocab_size):
     else:  # 若没有指定预训练模型，则初始化模型
         model_config = transformers.modeling_gpt2.GPT2Config.from_json_file(args.model_config)
         model = GPT2LMHeadModel(config=model_config)
+        model = model.from_pretrained('gpt2')
     # 根据tokenizer的vocabulary调整GPT2模型的voca的大小
     model.resize_token_embeddings(vocab_size)
     logger.info('model config:\n{}'.format(model.config.to_json_string()))
@@ -156,6 +158,35 @@ def preprocess_raw_data(args, tokenizer, n_ctx):
                 f.write("\n")
     logger.info("finish preprocessing raw data,the result is stored in {}".format(args.train_tokenized_path))
 
+
+def preprocess_que_ans_data(args, tokenizer, n_ctx):
+    """
+    对原始语料进行处理，将原始语料转换为用于train的token id，对于每个dialogue，将其处于成如下形式"[CLS]utterance1[SEP]utterance2[SEP]utterance3[SEP]"
+    :param args:
+    :param tokenizer:
+    :param n_ctx:GPT2模型的上下文窗口大小,对于超过n_ctx(n_ctx包括了特殊字符)的dialogue进行截断
+    :return:
+    """
+    logger.info("tokenizing raw data,raw data path:{}, token output path:{}".format(args.train_raw_path_ques,
+                                                                                    args.train_tokenized_path))
+    data_ques = pickle.load(open(args.train_raw_path_ques, 'rb'))
+    data_ans = pickle.load(open(args.train_raw_path_ans, 'rb'))
+    logger.info("there are {} dialogue in raw dataset".format(len(data_ques)))
+    with open(args.train_tokenized_path, "w", encoding="utf-8") as f:
+        for dialogue_index, (ques, ans) in enumerate(zip(data_ques, data_ans)):
+            dialogue_ids = [tokenizer.cls_token_id]  # 每个dialogue以[CLS]开头
+            dialogue_ids.extend(tokenizer.encode(ques))
+            dialogue_ids.append(tokenizer.sep_token_id)  # 每个utterance之后添加[SEP]，表示utterance结束
+            dialogue_ids.extend(tokenizer.encode(ans))
+            dialogue_ids.append(tokenizer.sep_token_id)  # 每个utterance之后添加[SEP]，表示utterance结束
+            # 对超过n_ctx的长度进行截断,否则GPT2模型会报错
+            dialogue_ids = dialogue_ids[:n_ctx]
+            for dialogue_id in dialogue_ids:
+                f.write(str(dialogue_id) + ' ')
+            # 最后一条记录不添加换行符
+            if dialogue_index < len(train_data) - 1:
+                f.write("\n")
+    logger.info("finish preprocessing raw data,the result is stored in {}".format(args.train_tokenized_path))
 
 def preprocess_mmi_raw_data(args, tokenizer, n_ctx):
     """
@@ -364,7 +395,7 @@ def main():
     global logger
     logger = create_logger(args)
     # 当用户使用GPU,并且GPU可用时
-    args.cuda = torch.cuda.is_available() and not args.no_cuda
+    args.cuda = torch.cuda.is_available()
     device = 'cuda' if args.cuda else 'cpu'
     logger.info('using device:{}'.format(device))
     # 为CPU设置种子用于生成随机数，以使得结果是确定的
@@ -377,7 +408,8 @@ def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = args.device
 
     # 初始化tokenizer
-    tokenizer = BertTokenizer(vocab_file=args.vocab_path)
+    tokenizer = GPT2Tokenizer()
+    tokenizer = tokenizer.from_pretrained('gpt2')
     # tokenizer的字典大小
     vocab_size = len(tokenizer)
 
@@ -399,6 +431,8 @@ def main():
     elif args.raw and not args.train_mmi:  # 如果当前是要训练对话生成模型
         preprocess_raw_data(args, tokenizer, n_ctx)
     # 是否使用多块GPU进行并行运算
+    exit()
+
     multi_gpu = False
     if args.cuda and torch.cuda.device_count() > 1:
         logger.info("Let's use GPUs to train")

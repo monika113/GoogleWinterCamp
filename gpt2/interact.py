@@ -195,7 +195,7 @@ class Chatbot:
                 # his_text = tokenizer.convert_ids_to_tokens(curr_input_tensor.tolist())
                 # print("his_text:{}".format(his_text))
             self.history.append(generated)
-            print(generated)
+            # print(generated)
             text = self.tokenizer.convert_ids_to_tokens(generated)
             print("chatbot:" + " ".join(text))
             if self.save_samples_path:

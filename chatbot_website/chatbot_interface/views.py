@@ -14,3 +14,9 @@ def detail(request):
 def marge(request):
     return render(request, 'marge.html', {})
 
+def bart(request):
+    return render(request, 'bart.html', {})
+
+def lisa(request):
+    return render(request, 'lisa.html', {})
+

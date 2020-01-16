@@ -33,7 +33,7 @@ def ws_connect(message):
         message.channel_session['room'] = clientName
         message.reply_channel.send({'accept': True})
 
-
+Name_dict = {"homer":0, "marge":1}
 @channel_session
 def ws_receive(message):
     """ Called when a client send a message
@@ -42,14 +42,17 @@ def ws_receive(message):
     """
     # Get client info
     clientName = message.channel_session['room']
-    print("clientname", clientName, "!!!!!!!")
+    print("clientname", message.channel_session, "!!!!!!!")
     data = json.loads(message['text'])
     print("data", data)
     print("message", message, "!!!!!!!!!!!!!!!!")
     # Compute the prediction
     question = data['message']
+    print("url", data['url'])
+    name = data['url'].split('/')[-2]
+    person = Name_dict[name]
     try:
-        answer = ChatbotManager.callBot(question)
+        answer = ChatbotManager.callBot(question, person=person)
     except:  # Catching all possible mistakes
         logger.error('{}: Error with this question {}'.format(clientName, question))
         logger.error("Unexpected error:", sys.exc_info()[0])

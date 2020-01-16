@@ -30,6 +30,8 @@ class ChatbotManager(AppConfig):
 
     bot = None
     emoji_bot = None
+    # def __init__(self):
+    #     self.bot_list = []
 
     def ready(self):
         """ Called by Django only once during startup
@@ -46,6 +48,9 @@ class ChatbotManager(AppConfig):
         """
         if not ChatbotManager.bot:
             logger.info('Initializing bot...')
+            # for i in range(p_num):
+            #
+            #     bot_list.append(evaluate.Chatbot())
 
             ChatbotManager.bot = evaluate.Chatbot()
             ChatbotManager.bot.load_model()
@@ -60,7 +65,7 @@ class ChatbotManager(AppConfig):
             logger.info('Emoji Bot already initialized.')
 
     @staticmethod
-    def callBot(sentence):
+    def callBot(sentence, person=0):
         """ Use the previously instantiated bot to predict a response to the given sentence
         Args:
             sentence (str): the question to answer

@@ -15,11 +15,15 @@ chatbotPath = "/".join(settings.BASE_DIR.split('/')[:-1])
 sys.path.append(chatbotPath)
 from gpt2 import interact
 from emoji_prediction import inference
+from classsifier.character_classification_train import AttentionLSTM
+from classsifier.character_classification_train import load_model_classifier
+from classsifier.character_classification_train import predict_class
 import random
 # from chatbot import chatbot
 
 
 logger = logging.getLogger(__name__)
+use_classifier = True
 
 
 class ChatbotManager(AppConfig):
@@ -52,7 +56,7 @@ class ChatbotManager(AppConfig):
         """
         if not ChatbotManager.bot:
             logger.info('Initializing bot...')
-            ChatbotManager.bot_list =  []
+            ChatbotManager.bot_list = []
             for i in range(4):
                 # load diff model
                 ChatbotManager.bot_list.append(interact.Chatbot())
@@ -69,6 +73,11 @@ class ChatbotManager(AppConfig):
         else:
             logger.info('Emoji Bot already initialized.')
 
+        if use_classifier:
+            ChatbotManager.classifier = AttentionLSTM()
+            ChatbotManager.classifier = load_model_classifier(ChatbotManager.classifier)
+            print("load classifier !!!!!!!!!!!!!")
+
     @staticmethod
     def callBot(sentence, p=0, port=0):
         """ Use the previously instantiated bot to predict a response to the given sentence
@@ -78,12 +87,26 @@ class ChatbotManager(AppConfig):
             str: the answer
         """
         if ChatbotManager.bot_list and ChatbotManager.emoji_bot:
+            # score the candidates
+            num = 4
+            Answers = []
+            Scores = np.zeros(num)
+            for i  in range(num):
+                answer = ChatbotManager.bot_list[p].predict(sentence, port)
+                Answers.append(answer)
+                score = predict_class(ChatbotManager.classifier, answer, person=p)
+                Scores[i] = score
+            best = np.argmax(Scores)
+            final_answer = Answers[best]
+            print("final answer:", final_answer)
+            # print("score", score)
+
             prob = np.random.rand()
             if prob < 0.2:
-                return ChatbotManager.bot_list[p].predict(sentence, port) + ChatbotManager.emoji_bot.predict_class(sentence)
+                return final_answer + ChatbotManager.emoji_bot.predict_class(sentence)
             elif prob > 0.8:
-                return ChatbotManager.emoji_bot.predict_class(sentence) + ChatbotManager.bot_list[p].predict(sentence, port)
+                return ChatbotManager.emoji_bot.predict_class(sentence) + final_answer
             else:
-                return ChatbotManager.bot_list[p].predict(sentence, port)
+                return final_answer
         else:
             logger.error('Error: Bot not initialized!')

@@ -190,8 +190,9 @@ footer {
 	float: left;
 }
 footer .footer_column h3 {
-	color: #B3B3B3;
+	color: #717070;
 	text-align: center;
+	font-weight: bold;
 }
 footer .footer_column p {
 	color: #717070;

@@ -23,8 +23,10 @@ $(function() {
             if (message_val) {
                 // Send the message
                 var message = {
-                    message: message_val
+                    message: message_val,
+                    url: window.location.href
                 };
+                console.log(message)
                 chatsock.send(JSON.stringify(message));
                 message_elem.val('').focus();
 

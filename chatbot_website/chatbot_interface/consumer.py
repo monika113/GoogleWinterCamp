@@ -33,7 +33,7 @@ def ws_connect(message):
         message.channel_session['room'] = clientName
         message.reply_channel.send({'accept': True})
 
-
+Name_dict = {"homer":0, "marge":1, "bart":2, "lisa": 3}
 @channel_session
 def ws_receive(message):
     """ Called when a client send a message
@@ -42,12 +42,19 @@ def ws_receive(message):
     """
     # Get client info
     clientName = message.channel_session['room']
+    port = int(clientName.split('-')[-1])
+    # print("port", port, "!!!!!!!!!!")
+    # print("clientname", message.channel_session, "!!!!!!!")
     data = json.loads(message['text'])
-
+    # print("data", data)
+    # print("message", message, "!!!!!!!!!!!!!!!!")
     # Compute the prediction
     question = data['message']
+    # print("url", data['url'])
+    name = data['url'].split('/')[-2]
+    person = Name_dict[name]
     try:
-        answer = ChatbotManager.callBot(question)
+        answer = ChatbotManager.callBot(question, p=person, port=port)
     except:  # Catching all possible mistakes
         logger.error('{}: Error with this question {}'.format(clientName, question))
         logger.error("Unexpected error:", sys.exc_info()[0])
@@ -55,8 +62,8 @@ def ws_receive(message):
 
     # Check eventual error
     if not answer:
-        # answer = 'Error: Try a shorter sentence orangleliu<span class="emoji emoji1f4d6"></span>'
-        answer = u'\U0001F60D'+'test'
+        answer = 'Error: Try a shorter sentence'
+        # answer = u'\U0001F60D'+'test'
     logger.info('{}: {} -> {}'.format(clientName, question, answer))
 
     # Send the prediction back

@@ -123,7 +123,7 @@ class Chatbot:
 
         return predicted_sentence
 
-    def load_model(self, args = None):
+    def load_model(self, args=None):
         if args:
             load_tokenizer_path = args.load_tokenizer_path
             pre_train_model_path = args.pre_train_model_path

@@ -30,6 +30,8 @@ class ChatbotManager(AppConfig):
 
     bot = None
     emoji_bot = None
+    # def __init__(self):
+    #     self.bot_list = []
 
     def ready(self):
         """ Called by Django only once during startup
@@ -46,9 +48,13 @@ class ChatbotManager(AppConfig):
         """
         if not ChatbotManager.bot:
             logger.info('Initializing bot...')
+            ChatbotManager.bot_list =  []
+            for i in range(4):
+                # load diff model
+                ChatbotManager.bot_list.append(evaluate.Chatbot())
 
-            ChatbotManager.bot = interact.Chatbot()
-            ChatbotManager.bot.load_model()
+            # ChatbotManager.bot = evaluate.Chatbot()
+                ChatbotManager.bot_list[i].load_model()
         else:
             logger.info('Bot already initialized.')
 
@@ -60,20 +66,20 @@ class ChatbotManager(AppConfig):
             logger.info('Emoji Bot already initialized.')
 
     @staticmethod
-    def callBot(sentence, client=0):
+    def callBot(sentence, p=0, port=0):
         """ Use the previously instantiated bot to predict a response to the given sentence
         Args:
             sentence (str): the question to answer
         Return:
             str: the answer
         """
-        if ChatbotManager.bot and ChatbotManager.emoji_bot:
-            p = np.random.rand()
-            if p < 0.2:
-                return ChatbotManager.bot.predict(sentence, client) + ChatbotManager.emoji_bot.predict_class(sentence)
-            elif p > 0.8:
-                return ChatbotManager.emoji_bot.predict_class(sentence) + ChatbotManager.bot.predict(sentence, client)
+        if ChatbotManager.bot_list and ChatbotManager.emoji_bot:
+            prob = np.random.rand()
+            if prob < 0.2:
+                return ChatbotManager.bot_list[p].predict(sentence) + ChatbotManager.emoji_bot.predict_class(sentence)
+            elif prob > 0.8:
+                return ChatbotManager.emoji_bot.predict_class(sentence) + ChatbotManager.bot_list[p].predict(sentence)
             else:
-                return ChatbotManager.bot.predict(sentence, client)
+                return ChatbotManager.bot_list[p].predict(sentence)
         else:
             logger.error('Error: Bot not initialized!')

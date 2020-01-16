@@ -9,9 +9,9 @@ from .chatbotmanager import ChatbotManager
 # print("main_view", views.mainView)
 urlpatterns = [
     url(r'^$', views.mainView),
-    url('homer/', views.homer, name='homer'),
-    url('marge/', views.marge, name="marge"),
-    url('bart/', views.bart, name='bart'),
-    url('lisa/', views.lisa, name="lisa"),
+    url('Homer/', views.homer, name='homer'),
+    url('Marge/', views.marge, name="marge"),
+    url('Bart/', views.bart, name='bart'),
+    url('Lisa/', views.lisa, name="lisa"),
 ]
 

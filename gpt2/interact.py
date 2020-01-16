@@ -140,7 +140,7 @@ class Chatbot:
                 self.samples_file.write("聊天记录{}:\n".format(datetime.now()))
             # 存储聊天记录，每个utterance以token的id的形式进行存储
         self.history = []
-        print('开始和chatbot聊天，输入CTRL + C以退出')
+        print('load model')
 
     def predict(self, text, client=0):
         # 判断是否还是同一个用户，如果不是，清空聊天记录

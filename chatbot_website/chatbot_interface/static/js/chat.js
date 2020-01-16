@@ -9,8 +9,13 @@ $(function() {
     
     chatsock.onmessage = function(message) {
         var data = JSON.parse(message.data);
+//        console.log(window.location.href)
+        var url = (window.location.href).toString()
+//        console.log(typeof url)
+        var name = url.split("/")[3]
+        console.log(name)
         chat_zone.append(
-            $("<p class='answer'></p>").text('Simpson: ' + data.message)
+            $("<p class='answer'></p>").text( name +' Simpson: ' + data.message)
         );
     };
 

@@ -844,7 +844,7 @@
 
         #chat_zone {
         	padding-top: 1%;
-        	height: 900px;
+        	height: 360px;
         	overflow-x:hidden;
 			overflow-y:scroll ;
 			font-size: 0.9em;

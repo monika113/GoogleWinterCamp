@@ -8,8 +8,8 @@ def mainView(request):
     return render(request, 'main.html', {})
     # return render(request, 'index.html', {})
 
-def detail(request):
-    return render(request, 'index.html', {})
+def homer(request):
+    return render(request, 'homer.html', {})
 
 def marge(request):
     return render(request, 'marge.html', {})

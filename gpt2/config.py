@@ -1,0 +1,12 @@
+device = 0
+temperature = 1.0
+topk = 8
+topp = 0
+model_config = 'config/model_config_dialogue_small.json'
+log_path = 'data/interacting.log'
+dialogue_model_path = 'dialogue_model_path/'
+save_samples_path = "sample/"
+repetition_penalty = 1.0
+seed = None
+max_len = 25
+max_history_len = 3

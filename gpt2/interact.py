@@ -22,8 +22,33 @@ from sklearn.model_selection import train_test_split
 from train import create_model
 import torch.nn.functional as F
 
+from config import config
 cur_dir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(cur_dir)
+
+
+def set_interact_args():
+    """
+    Sets up the training arguments.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--device', default='0', type=str, required=False, help='生成设备')
+    parser.add_argument('--temperature', default=1, type=float, required=False, help='生成的temperature')
+    parser.add_argument('--topk', default=8, type=int, required=False, help='最高k选1')
+    parser.add_argument('--topp', default=0, type=float, required=False, help='最高积累概率')
+    parser.add_argument('--model_config', default='config/model_config_dialogue_small.json', type=str, required=False,
+                        help='模型参数')
+    parser.add_argument('--log_path', default='data/interacting.log', type=str, required=False, help='interact日志存放位置')
+    parser.add_argument('--dialogue_model_path', default='dialogue_model_path/', type=str, required=False,
+                        help='对话模型路径')
+    parser.add_argument('--save_samples_path', default="sample/", type=str, required=False, help="保存聊天记录的文件路径")
+    parser.add_argument('--repetition_penalty', default=1.0, type=float, required=False,
+                        help="重复惩罚参数，若生成的对话重复性较高，可适当提高该参数")
+    parser.add_argument('--seed', type=int, default=None, help='设置种子用于生成随机数，以使得训练的结果是确定的')
+    parser.add_argument('--max_len', type=int, default=25, help='每个utterance的最大长度,超过指定长度则进行截断')
+    parser.add_argument('--max_history_len', type=int, default=3, help="dialogue history的最大长度")
+    parser.add_argument('--no_cuda', action='store_true', help='不使用GPU进行预测')
+    return parser.parse_args()
 
 
 class Chatbot:
@@ -35,28 +60,6 @@ class Chatbot:
         self.tokenizer = None
         self.device = None
         self.samples_file = None
-
-    def set_interact_args(self):
-        """
-        Sets up the training arguments.
-        """
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--device', default='0', type=str, required=False, help='生成设备')
-        parser.add_argument('--temperature', default=1, type=float, required=False, help='生成的temperature')
-        parser.add_argument('--topk', default=8, type=int, required=False, help='最高k选1')
-        parser.add_argument('--topp', default=0, type=float, required=False, help='最高积累概率')
-        parser.add_argument('--model_config', default='config/model_config_dialogue_small.json', type=str, required=False,
-                            help='模型参数')
-        parser.add_argument('--log_path', default='data/interacting.log', type=str, required=False, help='interact日志存放位置')
-        parser.add_argument('--dialogue_model_path', default='dialogue_model_path/', type=str, required=False, help='对话模型路径')
-        parser.add_argument('--save_samples_path', default="sample/", type=str, required=False, help="保存聊天记录的文件路径")
-        parser.add_argument('--repetition_penalty', default=1.0, type=float, required=False,
-                            help="重复惩罚参数，若生成的对话重复性较高，可适当提高该参数")
-        parser.add_argument('--seed', type=int, default=None, help='设置种子用于生成随机数，以使得训练的结果是确定的')
-        parser.add_argument('--max_len', type=int, default=25, help='每个utterance的最大长度,超过指定长度则进行截断')
-        parser.add_argument('--max_history_len', type=int, default=3, help="dialogue history的最大长度")
-        parser.add_argument('--no_cuda', action='store_true', help='不使用GPU进行预测')
-        return parser.parse_args()
 
     def create_logger(self):
         """
@@ -116,16 +119,17 @@ class Chatbot:
             logits[indices_to_remove] = filter_value
         return logits
 
-    def load_model(self, model_path=None):
-        self.args = self.set_interact_args()
-        logger = self.create_logger(self.args)
+    def load_model(self, model_path=None, args=None):
+        self.args = args
+        if self.args:
+            logger = self.create_logger(self.args)
         if not model_path:
             model_path = self.args.dialogue_model_path
         # 当用户使用GPU,并且GPU可用时
-        self.args.cuda = torch.cuda.is_available() and not self.args.no_cuda
-        self.device = 'cuda' if self.args.cuda else 'cpu'
+        cuda = torch.cuda.is_available()
+        self.device = 'cuda' if cuda else 'cpu'
         logger.info('using device:{}'.format(self.device))
-        os.environ["CUDA_VISIBLE_DEVICES"] = self.args.device
+        os.environ["CUDA_VISIBLE_DEVICES"] = self.device
         self.tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
         special_tokens_dict = {'cls_token': '[CLS]', 'sep_token': '[SEP]', 'pad_token': '[PAD]'}
         num_added_toks = self.tokenizer.add_special_tokens(special_tokens_dict)
@@ -153,22 +157,35 @@ class Chatbot:
             self.history.append(self.tokenizer.convert_tokens_to_ids(text.lower().split()))
             input_ids = [self.tokenizer.convert_tokens_to_ids('[CLS]')]  # 每个input以[CLS]为开头
 
-            for history_id, history_utr in enumerate(self.history[-self.args.max_history_len:]):
+            max_history_len = config.max_history_len
+            if self.args.max_history_len:
+                max_history_len = self.args.max_history_len
+            for history_id, history_utr in enumerate(self.history[-max_history_len:]):
                 input_ids.extend(history_utr)
                 input_ids.append(self.tokenizer.convert_tokens_to_ids('[SEP]'))
             curr_input_tensor = torch.tensor(input_ids).long().to(self.device)
             generated = []
             # 最多生成max_len个token
-            for _ in range(self.args.max_len):
+            max_len = config.max_len
+            repetition_penalty = config.repetition_penalty
+            temperature = config.temperature
+            topk = config.topk
+            topp = config.topp
+            if self.args:
+                repetition_penalty = self.args.repetition_penalty
+                temperature = self.args.temperature
+                topk = self.args.topk
+                topp = self.args.topp
+            for _ in range(max_len):
                 outputs = self.model(input_ids=curr_input_tensor)
                 next_token_logits = outputs[0][-1, :]
                 # 对于已生成的结果generated中的每个token添加一个重复惩罚项，降低其生成概率
                 for id in set(generated):
-                    next_token_logits[id] /= self.args.repetition_penalty
-                next_token_logits = next_token_logits / self.args.temperature
+                    next_token_logits[id] /= repetition_penalty
+                next_token_logits = next_token_logits / temperature
                 # 对于[UNK]的概率设为无穷小，也就是说模型的预测结果不可能是[UNK]这个token
                 next_token_logits[self.tokenizer.convert_tokens_to_ids('[UNK]')] = -float('Inf')
-                filtered_logits = self.top_k_top_p_filtering(next_token_logits, top_k=self.args.topk, top_p=self.args.topp)
+                filtered_logits = self.top_k_top_p_filtering(next_token_logits, top_k=topk, top_p=topp)
                 # torch.multinomial表示从候选集合中无放回地进行抽取num_samples个元素，权重越高，抽到的几率越高，返回元素的下标
                 next_token = torch.multinomial(F.softmax(filtered_logits, dim=-1), num_samples=1)
                 if next_token == self.tokenizer.convert_tokens_to_ids('[SEP]'):  # 遇到[SEP]则表明response生成结束

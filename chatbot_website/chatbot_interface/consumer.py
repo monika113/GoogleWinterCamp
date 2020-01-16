@@ -42,17 +42,19 @@ def ws_receive(message):
     """
     # Get client info
     clientName = message.channel_session['room']
-    print("clientname", message.channel_session, "!!!!!!!")
+    port = int(clientName.split('-')[-1])
+    # print("port", port, "!!!!!!!!!!")
+    # print("clientname", message.channel_session, "!!!!!!!")
     data = json.loads(message['text'])
-    print("data", data)
-    print("message", message, "!!!!!!!!!!!!!!!!")
+    # print("data", data)
+    # print("message", message, "!!!!!!!!!!!!!!!!")
     # Compute the prediction
     question = data['message']
-    print("url", data['url'])
+    # print("url", data['url'])
     name = data['url'].split('/')[-2]
     person = Name_dict[name]
     try:
-        answer = ChatbotManager.callBot(question, person=person)
+        answer = ChatbotManager.callBot(question, p=person, port=port)
     except:  # Catching all possible mistakes
         logger.error('{}: Error with this question {}'.format(clientName, question))
         logger.error("Unexpected error:", sys.exc_info()[0])

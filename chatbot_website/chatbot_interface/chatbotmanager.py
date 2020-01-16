@@ -66,7 +66,7 @@ class ChatbotManager(AppConfig):
             logger.info('Emoji Bot already initialized.')
 
     @staticmethod
-    def callBot(sentence, p=0):
+    def callBot(sentence, p=0, port=0):
         """ Use the previously instantiated bot to predict a response to the given sentence
         Args:
             sentence (str): the question to answer

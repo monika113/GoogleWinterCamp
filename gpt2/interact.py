@@ -22,9 +22,9 @@ from sklearn.model_selection import train_test_split
 from train import create_model
 import torch.nn.functional as F
 
-from config import config
 cur_dir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(cur_dir)
+import config
 
 
 def set_interact_args():

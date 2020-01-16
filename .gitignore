@@ -9,3 +9,6 @@ __pycache__
 .DS_Store
 emoji_prediction/models/emoji_classification_model.pt
 *.bin
+*.jpg
+*.jpeg
+*.png

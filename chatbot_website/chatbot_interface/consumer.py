@@ -33,7 +33,7 @@ def ws_connect(message):
         message.channel_session['room'] = clientName
         message.reply_channel.send({'accept': True})
 
-Name_dict = {"homer":0, "marge":1, "bart":2, "lisa": 3}
+Name_dict = {"Homer":0, "Marge":1, "Bart":2, "Lisa": 3}
 @channel_session
 def ws_receive(message):
     """ Called when a client send a message

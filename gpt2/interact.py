@@ -16,6 +16,7 @@ from os.path import join, exists
 from itertools import zip_longest, chain
 # from chatbot.model import DialogueGPT2Model
 import torch.nn.functional as F
+from nltk.tokenize import word_tokenize
 
 cur_dir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(cur_dir)
@@ -152,7 +153,7 @@ class Chatbot:
                 if self.args.save_samples_path:
                     self.samples_file.write("user:{}\n".format(text))
             # revise needed 更精细的处理
-            self.history.append(self.tokenizer.convert_tokens_to_ids(text.lower().split()))
+            self.history.append(self.tokenizer.convert_tokens_to_ids(word_tokenize(text.lower())))
             input_ids = [self.tokenizer.convert_tokens_to_ids('[CLS]')]  # 每个input以[CLS]为开头
 
             max_history_len = config.max_history_len

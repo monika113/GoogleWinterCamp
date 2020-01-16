@@ -6,7 +6,7 @@ Chatbots with personalities of main characters of *The Simpsons*
 
 ## Dataset
 Our project is based on following datasets:
-1. [Dialogue Lines of The Simpsons](https://www.kaggle.com/pierremegret/dialogue-lines-of-the-simpsons) in `
+1. [Dialogue Lines of The Simpsons](https://www.kaggle.com/pierremegret/dialogue-lines-of-the-simpsons)
 2. [Cornell Movie--Dialogs Corpus](http://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html)
 3. [PersonaChat ConvAI2](http://convai.io/#personachat-convai2-dataset)
 4. Emojify-Data EN

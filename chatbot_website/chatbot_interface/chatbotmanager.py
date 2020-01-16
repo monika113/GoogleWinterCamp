@@ -34,7 +34,8 @@ class ChatbotManager(AppConfig):
     #     self.bot_list = []
 
     #TO DO: add model path!!
-    model_path = []
+    model_prefix = '../gpt2/models/'
+    person_name = ['homer', 'marge', 'bart', 'lisa']
 
     def ready(self):
         """ Called by Django only once during startup
@@ -57,7 +58,7 @@ class ChatbotManager(AppConfig):
                 ChatbotManager.bot_list.append(interact.Chatbot())
 
             # ChatbotManager.bot = evaluate.Chatbot()
-                ChatbotManager.bot_list[i].load_model(ChatbotManager.model_path[i])
+                ChatbotManager.bot_list[i].load_model(ChatbotManager.model_prefix+ChatbotManager.person_name[i])
         else:
             logger.info('Bot already initialized.')
 

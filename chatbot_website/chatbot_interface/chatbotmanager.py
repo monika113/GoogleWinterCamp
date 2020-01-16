@@ -13,7 +13,7 @@ import numpy as np
 
 chatbotPath = "/".join(settings.BASE_DIR.split('/')[:-1])
 sys.path.append(chatbotPath)
-from transformer import evaluate
+from gpt2 import interact
 from emoji_prediction import inference
 import random
 # from chatbot import chatbot
@@ -47,7 +47,7 @@ class ChatbotManager(AppConfig):
         if not ChatbotManager.bot:
             logger.info('Initializing bot...')
 
-            ChatbotManager.bot = evaluate.Chatbot()
+            ChatbotManager.bot = interact.Chatbot()
             ChatbotManager.bot.load_model()
         else:
             logger.info('Bot already initialized.')
@@ -60,7 +60,7 @@ class ChatbotManager(AppConfig):
             logger.info('Emoji Bot already initialized.')
 
     @staticmethod
-    def callBot(sentence):
+    def callBot(sentence, client=0):
         """ Use the previously instantiated bot to predict a response to the given sentence
         Args:
             sentence (str): the question to answer
@@ -70,10 +70,10 @@ class ChatbotManager(AppConfig):
         if ChatbotManager.bot and ChatbotManager.emoji_bot:
             p = np.random.rand()
             if p < 0.2:
-                return ChatbotManager.bot.predict(sentence) + ChatbotManager.emoji_bot.predict_class(sentence)
+                return ChatbotManager.bot.predict(sentence, client) + ChatbotManager.emoji_bot.predict_class(sentence)
             elif p > 0.8:
-                return ChatbotManager.emoji_bot.predict_class(sentence) + ChatbotManager.bot.predict(sentence)
+                return ChatbotManager.emoji_bot.predict_class(sentence) + ChatbotManager.bot.predict(sentence, client)
             else:
-                return ChatbotManager.bot.predict(sentence)
+                return ChatbotManager.bot.predict(sentence, client)
         else:
             logger.error('Error: Bot not initialized!')

@@ -12,3 +12,7 @@ emoji_prediction/models/emoji_classification_model.pt
 *.jpg
 *.jpeg
 *.png
+gpt2/models/*
+chatbot_website/.vector_cache/*
+
+

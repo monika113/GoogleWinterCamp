@@ -13,7 +13,7 @@ import numpy as np
 
 chatbotPath = "/".join(settings.BASE_DIR.split('/')[:-1])
 sys.path.append(chatbotPath)
-from transformer import evaluate
+from gpt2 import interact
 from emoji_prediction import inference
 import random
 # from chatbot import chatbot
@@ -33,6 +33,9 @@ class ChatbotManager(AppConfig):
     # def __init__(self):
     #     self.bot_list = []
 
+    #TO DO: add model path!!
+    model_path = []
+
     def ready(self):
         """ Called by Django only once during startup
         """
@@ -51,10 +54,10 @@ class ChatbotManager(AppConfig):
             ChatbotManager.bot_list =  []
             for i in range(4):
                 # load diff model
-                ChatbotManager.bot_list.append(evaluate.Chatbot())
+                ChatbotManager.bot_list.append(interact.Chatbot())
 
             # ChatbotManager.bot = evaluate.Chatbot()
-                ChatbotManager.bot_list[i].load_model()
+                ChatbotManager.bot_list[i].load_model(ChatbotManager.model_path[i])
         else:
             logger.info('Bot already initialized.')
 
@@ -76,10 +79,10 @@ class ChatbotManager(AppConfig):
         if ChatbotManager.bot_list and ChatbotManager.emoji_bot:
             prob = np.random.rand()
             if prob < 0.2:
-                return ChatbotManager.bot_list[p].predict(sentence) + ChatbotManager.emoji_bot.predict_class(sentence)
+                return ChatbotManager.bot_list[p].predict(sentence, port) + ChatbotManager.emoji_bot.predict_class(sentence)
             elif prob > 0.8:
-                return ChatbotManager.emoji_bot.predict_class(sentence) + ChatbotManager.bot_list[p].predict(sentence)
+                return ChatbotManager.emoji_bot.predict_class(sentence) + ChatbotManager.bot_list[p].predict(sentence, port)
             else:
-                return ChatbotManager.bot_list[p].predict(sentence)
+                return ChatbotManager.bot_list[p].predict(sentence, port)
         else:
             logger.error('Error: Bot not initialized!')

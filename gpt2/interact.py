@@ -55,6 +55,7 @@ class Chatbot:
         self.tokenizer = None
         self.device = None
         self.samples_file = None
+        self.save_samples_path = None
 
     def create_logger(self):
         """
@@ -123,7 +124,7 @@ class Chatbot:
         # 当用户使用GPU,并且GPU可用时
         cuda = torch.cuda.is_available()
         self.device = 'cuda' if cuda else 'cpu'
-        logger.info('using device:{}'.format(self.device))
+        # logger.info('using device:{}'.format(self.device))
         os.environ["CUDA_VISIBLE_DEVICES"] = self.device
         self.tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
         special_tokens_dict = {'cls_token': '[CLS]', 'sep_token': '[SEP]', 'pad_token': '[PAD]'}
@@ -131,11 +132,12 @@ class Chatbot:
         self.model = GPT2LMHeadModel.from_pretrained(model_path)
         self.model.to(self.device)
         self.model.eval()
-        if self.args.save_samples_path:
-            if not os.path.exists(self.args.save_samples_path):
-                os.makedirs(self.args.save_samples_path)
-            self.samples_file = open(self.args.save_samples_path + '/samples.txt', 'a', encoding='utf8')
-            self.samples_file.write("聊天记录{}:\n".format(datetime.now()))
+        if self.args:
+            if self.args.save_samples_path:
+                if not os.path.exists(self.args.save_samples_path):
+                    os.makedirs(self.args.save_samples_path)
+                self.samples_file = open(self.args.save_samples_path + '/samples.txt', 'a', encoding='utf8')
+                self.samples_file.write("聊天记录{}:\n".format(datetime.now()))
             # 存储聊天记录，每个utterance以token的id的形式进行存储
         self.history = []
         print('开始和chatbot聊天，输入CTRL + C以退出')
@@ -146,15 +148,17 @@ class Chatbot:
             self.history = []
             self.client = client
         try:
-            if self.args.save_samples_path:
-                self.samples_file.write("user:{}\n".format(text))
+            if self.args:
+                if self.args.save_samples_path:
+                    self.samples_file.write("user:{}\n".format(text))
             # revise needed 更精细的处理
             self.history.append(self.tokenizer.convert_tokens_to_ids(text.lower().split()))
             input_ids = [self.tokenizer.convert_tokens_to_ids('[CLS]')]  # 每个input以[CLS]为开头
 
             max_history_len = config.max_history_len
-            if self.args.max_history_len:
-                max_history_len = self.args.max_history_len
+            if self.args:
+                if self.args.max_history_len:
+                    max_history_len = self.args.max_history_len
             for history_id, history_utr in enumerate(self.history[-max_history_len:]):
                 input_ids.extend(history_utr)
                 input_ids.append(self.tokenizer.convert_tokens_to_ids('[SEP]'))

@@ -12,21 +12,15 @@ Our project is based on following datasets:
 4. Emojify-Data EN
 
 ## Model
-We tried two different methods for dialogue generation. And a classification model is trained to get the answer that best suits the character's personality.
-We managed to make the chatbots response with emojis, in order to make it more like a real conversation online.
+We tried two different methods for dialogue generation. Transformer and GPT2.
 
-### Method 1: Transformer
-train model:
-```
-sh train.sh
-```
-pretrained model
-### Method 2: GPT2
+We use attention-based Bi-LSTM for classification to do emoji prediction.
 
+A Bi-LSTM model is used to find the response most like what the character would say.
 
 
 ## Guide
-To try the Chatbot:
+### To try the Chatbot:
 ```
 cd chatbot_website/
 python manage.py makemigrations
@@ -39,13 +33,23 @@ python manage.py runserver 127.0.0.1:8000
 ```
 Then, Go to the Browser: http://127.0.0.1:8000/
 
+REMIND: not all used model is pushed to Github, since some of them are big.
 
-## Code
-1. ```/gpt2```contains all codes of run
+### Path of each part:
+Transformer: ```/transformer```
+GPT2: ```gpt2/```
+response select: ```/classifier```
+emoji prediction: ```/emoji_prediction```
+web UI: ```/chatbot_website```
+preprocess of Simpson dataset: ```/preprocess ```
+gpt2DoubeHead is tried but not used.
+
 
 ## Reference
-1. [https://github.com/yangjianxin1/GPT2-chitchat](https://github.com/yangjianxin1/GPT2-chitchat)
-2. [https://github.com/huggingface/transfer-learning-conv-ai](https://github.com/huggingface/transfer-learning-conv-ai)
-3. [https://blog.tensorflow.org/2019/05/transformer-chatbot-tutorial-with-tensorflow-2.html](https://blog.tensorflow.org/2019/05/transformer-chatbot-tutorial-with-tensorflow-2.html)
-4. Vaswani, Ashish, et al. "Attention is all you need." Advances in neural information processing systems. 2017.
-5. https://github.com/shbhmbhrgv/Personality-Chatbot
+1. (Our implementation of Transformer is based on) A Transformer Chatbot Tutorial with TensorFlow 2.0. [https://blog.tensorflow.org/2019/05/transformer-chatbot-tutorial-with-tensorflow-2.html](https://blog.tensorflow.org/2019/05/transformer-chatbot-tutorial-with-tensorflow-2.html)
+2. (Our implementation of GPT2 is based on) GPT2 for Chinese chitchat. [https://github.com/yangjianxin1/GPT2-chitchat](https://github.com/yangjianxin1/GPT2-chitchat)
+3. (Our web UI is based on) Personality ChatBot: Say Hi to Joey! [https://github.com/shbhmbhrgv/Personality-Chatbot](https://github.com/shbhmbhrgv/Personality-Chatbot)
+4. How to build a State-of-the-Art Conversational AI with Transfer Learning [https://medium.com/huggingface/how-to-build-a-state-of-the-art-conversational-ai-with-transfer-learning-2d818ac26313](https://medium.com/huggingface/how-to-build-a-state-of-the-art-conversational-ai-with-transfer-learning-2d818ac26313)
+5. Nguyen, H., Morales, D. and Chin, T., 2017. A neural chatbot with personality.
+6. Holtzman, A., Buys, J., Forbes, M. and Choi, Y., 2019. The curious case of neural text degeneration. arXiv preprint arXiv:1904.09751.
+

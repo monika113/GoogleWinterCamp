@@ -20,4 +20,4 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'', include('chatbot_interface.urls')),
 ]
-print("admin_url", url(r'^admin/', admin.site.urls))
+# print("admin_url", url(r'^admin/', admin.site.urls))

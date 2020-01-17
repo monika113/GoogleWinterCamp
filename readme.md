@@ -4,6 +4,8 @@ Project repo for Google AI Winter Camp 2020
 
 Chatbots with personalities of main characters of *The Simpsons*.
 
+Watch out demo video: https://drive.google.com/file/d/1exbDdPWUfyGVWpyi9Pl6-u44ONDN45FB/view?usp=sharing
+
 Team: Alpha-new
 
 ## Dataset

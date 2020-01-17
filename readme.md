@@ -2,14 +2,16 @@
 
 Project repo for Google AI Winter Camp 2020
 
-Chatbots with personalities of main characters of *The Simpsons*
+Chatbots with personalities of main characters of *The Simpsons*.
+
+Team: Alpha-new
 
 ## Dataset
 Our project is based on following datasets:
 1. [Dialogue Lines of The Simpsons](https://www.kaggle.com/pierremegret/dialogue-lines-of-the-simpsons)
 2. [Cornell Movie--Dialogs Corpus](http://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html)
 3. [PersonaChat ConvAI2](http://convai.io/#personachat-convai2-dataset)
-4. Emojify-Data EN
+4. [Emojify-Data EN](https://www.kaggle.com/rexhaif/emojifydata-en)
 
 ## Model
 We tried two different methods for dialogue generation. Transformer and GPT2.
@@ -20,6 +22,14 @@ A Bi-LSTM model is used to find the response most like what the character would 
 
 
 ## Guide
+### Fine-tune the GPT2
+Fine-tuning on PersonaChat and on Homer's dialogs.
+```
+cd gpt2
+python train.py --train_raw_path_ques ../persona_data/train_enc.pk  --train_raw_path_ans ../persona_data/train_dec.pk --raw --epochs 10 --log_step 10000  
+python interact.py --dialogue_model_path ./dialogue_model_homer_bi/model_epoch10 --log_path data/interacting_homer_bi.log --save_samples_path homer_sample/  --max_history_len 3
+```
+
 ### To try the Chatbot:
 ```
 cd chatbot_website/
